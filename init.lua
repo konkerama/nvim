@@ -1066,3 +1066,5 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 	pattern = "*",
 	command = "silent! write",
 })
+
+vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "New tab" })
