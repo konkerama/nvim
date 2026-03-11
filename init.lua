@@ -980,6 +980,24 @@ require("lazy").setup({
 	--  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
 	-- { import = 'custom.plugins' },
 	--
+	{
+		"nvim-pack/nvim-spectre",
+		cmd = "Spectre",
+		keys = {
+			{
+				"<leader>S",
+				function()
+					require("spectre").open()
+				end,
+				desc = "Search/Replace in repo",
+			},
+		},
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+		},
+	},
+	{ "nvim-tree/nvim-web-devicons", lazy = true },
+	--
 	-- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
 	-- Or use telescope!
 	-- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
@@ -1021,13 +1039,19 @@ vim.keymap.set("n", "<leader>e", function()
 end, { desc = "Focus Neo-tree / return to editor" })
 
 vim.keymap.set("n", "<leader>gs", function()
-	require("neo-tree.command").execute({
+	local neotree = require("neo-tree.command")
+
+	-- Force close first (prevents reusing stale state)
+	pcall(neotree.execute, { source = "git_status", action = "close" })
+
+	-- Re-open
+	neotree.execute({
 		source = "git_status",
 		position = "bottom",
-		toggle = true,
+		toggle = false,
 		focus = true,
 	})
-end)
+end, { desc = "Neo-tree: Git status (force reopen)" })
 
 vim.api.nvim_create_autocmd("VimEnter", {
 	once = true,
