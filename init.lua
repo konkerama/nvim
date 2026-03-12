@@ -973,6 +973,9 @@ require("lazy").setup({
 	-- require 'kickstart.plugins.autopairs',
 	require("kickstart.plugins.neo-tree"),
 	require("kickstart.plugins.gitsigns"), -- adds gitsigns recommend keymaps
+	{ "tpope/vim-fugitive", lazy = false },
+	{'akinsho/toggleterm.nvim', version = "*", config = true},
+	{'github/copilot.vim', lazy = false},
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
@@ -1038,26 +1041,52 @@ vim.keymap.set("n", "<leader>e", function()
 	end
 end, { desc = "Focus Neo-tree / return to editor" })
 
-vim.keymap.set("n", "<leader>gs", function()
-	local neotree = require("neo-tree.command")
 
-	-- Force close first (prevents reusing stale state)
-	pcall(neotree.execute, { source = "git_status", action = "close" })
+-- This section adds the current git branch to the winbar of neo-tree windows. 
+-- It uses Fugitive's `FugitiveHead()` function to get the current branch name, and updates the winbar whenever relevant events occur (like changing directories, switching git branches, etc.).
+local function neotree_git_branch_label()
+	local branch = ""
 
-	-- Re-open
-	neotree.execute({
-		source = "git_status",
-		position = "bottom",
-		toggle = false,
-		focus = true,
-	})
-end, { desc = "Neo-tree: Git status (force reopen)" })
+	if vim.fn.exists("*FugitiveHead") == 1 then
+		branch = vim.fn.FugitiveHead()
+	end
+
+	if branch == nil or branch == "" then
+		return " Neo-tree"
+	end
+
+	return " Neo-tree  git:" .. branch
+end
+
+local function refresh_neotree_winbar()
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		if vim.bo[buf].filetype == "neo-tree" then
+			vim.api.nvim_set_option_value("winbar", neotree_git_branch_label(), { scope = "local", win = win })
+		end
+	end
+end
+
+local neotree_branch_augroup = vim.api.nvim_create_augroup("neotree-branch-winbar", { clear = true })
+vim.api.nvim_create_autocmd({ "FileType", "BufEnter", "DirChanged", "FocusGained", "TermClose" }, {
+	group = neotree_branch_augroup,
+	pattern = "*",
+	callback = refresh_neotree_winbar,
+})
+
+-- Trigger after Fugitive git actions like :Git switch.
+vim.api.nvim_create_autocmd("User", {
+	group = neotree_branch_augroup,
+	pattern = "FugitiveChanged",
+	callback = refresh_neotree_winbar,
+})
 
 vim.api.nvim_create_autocmd("VimEnter", {
 	once = true,
 	callback = function()
 		vim.schedule(function()
 			vim.cmd("Neotree show")
+			refresh_neotree_winbar()
 		end)
 	end,
 })
@@ -1068,3 +1097,11 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 })
 
 vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "New tab" })
+
+-- terminal
+vim.keymap.set('n', '<leader>tt', ':ToggleTerm<CR>')
+vim.keymap.set('n', '<C-\\>', ':ToggleTerm<CR>')
+
+-- git
+vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
+

@@ -18,6 +18,12 @@ return {
   ---@module 'neo-tree'
   ---@type neotree.Config
   opts = {
+    -- Unmap the default <space> key to avoid conflicts with which-key and other plugins
+    window = {
+      mappings = {
+        ['<space>'] = 'none',
+      },
+    },
     filesystem = {
       window = {
         mappings = {
