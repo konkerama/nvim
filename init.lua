@@ -974,8 +974,28 @@ require("lazy").setup({
 	require("kickstart.plugins.neo-tree"),
 	require("kickstart.plugins.gitsigns"), -- adds gitsigns recommend keymaps
 	{ "tpope/vim-fugitive", lazy = false },
-	{'akinsho/toggleterm.nvim', version = "*", config = true},
-	{'github/copilot.vim', lazy = false},
+	{ "akinsho/toggleterm.nvim", version = "*", config = true },
+	{ "github/copilot.vim", lazy = false },
+
+	{
+		"CopilotC-Nvim/CopilotChat.nvim",
+		dependencies = {
+			{ "nvim-lua/plenary.nvim", branch = "master" },
+		},
+		build = "make tiktoken",
+		opts = {
+			-- See Configuration section for options
+		},
+	},
+	{
+		"numToStr/Comment.nvim",
+		opts = {
+			-- add any options here
+		},
+	},
+	{ "fatih/vim-go" },
+	{ "charlespascoe/vim-go-syntax" },
+	{ "neoclide/coc.nvim" },
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
@@ -1041,8 +1061,7 @@ vim.keymap.set("n", "<leader>e", function()
 	end
 end, { desc = "Focus Neo-tree / return to editor" })
 
-
--- This section adds the current git branch to the winbar of neo-tree windows. 
+-- This section adds the current git branch to the winbar of neo-tree windows.
 -- It uses Fugitive's `FugitiveHead()` function to get the current branch name, and updates the winbar whenever relevant events occur (like changing directories, switching git branches, etc.).
 local function neotree_git_branch_label()
 	local branch = ""
@@ -1099,9 +1118,8 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "New tab" })
 
 -- terminal
-vim.keymap.set('n', '<leader>tt', ':ToggleTerm<CR>')
-vim.keymap.set('n', '<C-\\>', ':ToggleTerm<CR>')
+vim.keymap.set("n", "<leader>tt", ":ToggleTerm<CR>")
+vim.keymap.set("n", "<C-\\>", ":ToggleTerm<CR>")
 
 -- git
 vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
-
