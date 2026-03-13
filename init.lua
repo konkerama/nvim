@@ -995,7 +995,7 @@ require("lazy").setup({
 	},
 	{ "fatih/vim-go" },
 	{ "charlespascoe/vim-go-syntax" },
-	{ "neoclide/coc.nvim" },
+	--{ "neoclide/coc.nvim" },
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
