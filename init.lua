@@ -633,7 +633,7 @@ require("lazy").setup({
 			---@type table<string, vim.lsp.Config>
 			local servers = {
 				-- clangd = {},
-				-- gopls = {},
+				gopls = {},
 				-- pyright = {},
 				-- rust_analyzer = {},
 				--
@@ -642,6 +642,29 @@ require("lazy").setup({
 				--
 				-- But for many setups, the LSP (`ts_ls`) will work just fine
 				-- ts_ls = {},
+
+				-- Terraform / Terragrunt
+				terraformls = {},
+				tflint = {},
+
+				-- YAML / GitHub Actions
+				yamlls = {
+					settings = {
+						yaml = {
+							validate = true,
+							hover = true,
+							completion = true,
+							schemaStore = {
+								enable = true,
+								url = "https://www.schemastore.org/api/json/catalog.json",
+							},
+							schemas = {
+								["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
+								["https://json.schemastore.org/github-action.json"] = "/action.{yml,yaml}",
+							},
+						},
+					},
+				},
 
 				stylua = {}, -- Used to format Lua code
 
@@ -690,6 +713,10 @@ require("lazy").setup({
 			local ensure_installed = vim.tbl_keys(servers or {})
 			vim.list_extend(ensure_installed, {
 				-- You can add other tools here that you want Mason to install
+				"goimports",
+				"gofumpt",
+				"golangci-lint",
+				"actionlint",
 			})
 
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
@@ -735,6 +762,11 @@ require("lazy").setup({
 			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
+				go = { "gofumpt", "goimports" },
+				terraform = { "terraform_fmt" },
+				["terraform-vars"] = { "terraform_fmt" },
+				hcl = { "terragrunt_hclfmt" },
+				terragrunt = { "terragrunt_hclfmt" },
 				-- Conform can also run multiple formatters sequentially
 				-- python = { "isort", "black" },
 				--
@@ -921,14 +953,21 @@ require("lazy").setup({
 				"bash",
 				"c",
 				"diff",
+				"go",
+				"gomod",
+				"gosum",
+				"gotmpl",
+				"hcl",
 				"html",
 				"lua",
 				"luadoc",
 				"markdown",
 				"markdown_inline",
 				"query",
+				"terraform",
 				"vim",
 				"vimdoc",
+				"yaml",
 			}
 			require("nvim-treesitter").install(parsers)
 			vim.api.nvim_create_autocmd("FileType", {
@@ -975,7 +1014,17 @@ require("lazy").setup({
 	require("kickstart.plugins.neo-tree"),
 	require("kickstart.plugins.gitsigns"), -- adds gitsigns recommend keymaps
 	{ "tpope/vim-fugitive", lazy = false },
-	{ "akinsho/toggleterm.nvim", version = "*", config = true },
+	{
+		"akinsho/toggleterm.nvim",
+		version = "*",
+		opts = {
+			direction = "horizontal",
+			size = function(_)
+				return math.max(10, math.floor(vim.o.lines * 0.25))
+			end,
+			persist_size = true,
+		},
+	},
 	{ "github/copilot.vim", lazy = false },
 
 	{
@@ -997,6 +1046,39 @@ require("lazy").setup({
 	{ "fatih/vim-go" },
 	{ "charlespascoe/vim-go-syntax" },
 	{ "neoclide/coc.nvim" },
+	{
+		"NeogitOrg/neogit",
+		lazy = true,
+		dependencies = {
+			"nvim-lua/plenary.nvim",         -- required
+
+			-- Only one of these is needed.
+			"sindrets/diffview.nvim",        -- optional
+			"esmuellert/codediff.nvim",      -- optional
+
+			-- Only one of these is needed.
+			"nvim-telescope/telescope.nvim", -- optional
+			"ibhagwan/fzf-lua",              -- optional
+			"nvim-mini/mini.pick",           -- optional
+			"folke/snacks.nvim",             -- optional
+		},
+		cmd = "Neogit",
+		keys = {
+			{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" }
+		}
+	},
+	{
+		"rmagatti/auto-session",
+		lazy = false,
+
+		---enables autocomplete for opts
+		---@module "auto-session"
+		---@type AutoSession.Config
+		opts = {
+			suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+			-- log_level = 'debug',
+		},
+	},
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
@@ -1055,14 +1137,27 @@ require("lazy").setup({
 --
 --
 -- Custom keybindings:
--- vim.keymap.set("n", "<leader>e", ":Neotree focus<CR>")
 vim.keymap.set("n", "<leader>e", function()
 	if vim.bo.filetype == "neo-tree" then
 		vim.cmd("wincmd p") -- jump back to previous (editor) window
-	else
-		vim.cmd("Neotree focus")
+		return
 	end
-end, { desc = "Focus Neo-tree / return to editor" })
+
+	-- Focus the existing left Neo-tree window (keeps current source: files/buffers/git).
+	for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		if vim.bo[buf].filetype == "neo-tree" then
+			local pos = vim.api.nvim_win_get_position(win)
+			if pos[2] == 0 then
+				vim.api.nvim_set_current_win(win)
+				return
+			end
+		end
+	end
+
+	-- Fall back to opening/focusing Neo-tree if there is no visible left sidebar yet.
+	vim.cmd("Neotree focus")
+end, { desc = "Toggle left sidebar / active file" })
 
 -- This section adds the current git branch to the winbar of neo-tree windows.
 -- It uses Fugitive's `FugitiveHead()` function to get the current branch name, and updates the winbar whenever relevant events occur (like changing directories, switching git branches, etc.).
@@ -1074,10 +1169,15 @@ local function neotree_git_branch_label()
 	end
 
 	if branch == nil or branch == "" then
-		return " Neo-tree"
+		return "%#NeoTreeWinbarTitle# Neo-tree"
 	end
 
-	return " Neo-tree  git:" .. branch
+	return "%#NeoTreeWinbarTitle# Neo-tree  %#NeoTreeWinbarBranch#git:" .. branch
+end
+
+local function set_neotree_winbar_highlights()
+	vim.api.nvim_set_hl(0, "NeoTreeWinbarTitle", { fg = "#7aa2f7", bold = true })
+	vim.api.nvim_set_hl(0, "NeoTreeWinbarBranch", { fg = "#9ece6a", bold = true })
 end
 
 local function refresh_neotree_winbar()
@@ -1089,11 +1189,49 @@ local function refresh_neotree_winbar()
 	end
 end
 
+local neotree_start_width = nil
+
+local function set_cwd_from_start_arg()
+	if vim.fn.argc() == 0 then
+		return
+	end
+
+	local first_arg = vim.fn.argv(0)
+	if first_arg == nil or first_arg == "" then
+		return
+	end
+
+	local abs_path = vim.fn.fnamemodify(first_arg, ":p")
+	local start_dir = vim.fn.isdirectory(abs_path) == 1 and abs_path or vim.fn.fnamemodify(abs_path, ":h")
+
+	local root = vim.fs.root(start_dir, {
+		".git",
+		"go.work",
+		"go.mod",
+		"package.json",
+		"pyproject.toml",
+		"Cargo.toml",
+		"Makefile",
+	})
+
+	local target_dir = root or start_dir
+	if target_dir ~= nil and target_dir ~= "" then
+		vim.cmd("cd " .. vim.fn.fnameescape(target_dir))
+	end
+end
+
 local neotree_branch_augroup = vim.api.nvim_create_augroup("neotree-branch-winbar", { clear = true })
+set_neotree_winbar_highlights()
 vim.api.nvim_create_autocmd({ "FileType", "BufEnter", "DirChanged", "FocusGained", "TermClose" }, {
 	group = neotree_branch_augroup,
 	pattern = "*",
 	callback = refresh_neotree_winbar,
+})
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+	group = neotree_branch_augroup,
+	pattern = "*",
+	callback = set_neotree_winbar_highlights,
 })
 
 -- Trigger after Fugitive git actions like :Git switch.
@@ -1107,9 +1245,45 @@ vim.api.nvim_create_autocmd("VimEnter", {
 	once = true,
 	callback = function()
 		vim.schedule(function()
+			set_cwd_from_start_arg()
 			vim.cmd("Neotree show")
 			refresh_neotree_winbar()
+
+			for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+				local buf = vim.api.nvim_win_get_buf(win)
+				if vim.bo[buf].filetype == "neo-tree" then
+					neotree_start_width = vim.api.nvim_win_get_width(win)
+					break
+				end
+			end
 		end)
+	end,
+})
+
+-- Keep startup-like layout: if only Neo-tree remains, recreate an editor pane.
+local function ensure_editor_pane_with_neotree()
+	local wins = vim.api.nvim_tabpage_list_wins(0)
+	if #wins ~= 1 then
+		return
+	end
+
+	local only_win = wins[1]
+	local buf = vim.api.nvim_win_get_buf(only_win)
+	if vim.bo[buf].filetype ~= "neo-tree" then
+		return
+	end
+
+	vim.api.nvim_set_current_win(only_win)
+	vim.cmd("vnew")
+	vim.api.nvim_win_set_width(only_win, neotree_start_width or 40)
+end
+
+local neotree_layout_augroup = vim.api.nvim_create_augroup("neotree-keep-layout", { clear = true })
+vim.api.nvim_create_autocmd({ "WinClosed", "BufEnter", "TabEnter" }, {
+	group = neotree_layout_augroup,
+	pattern = "*",
+	callback = function()
+		vim.schedule(ensure_editor_pane_with_neotree)
 	end,
 })
 
@@ -1118,11 +1292,56 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 	command = "silent! write",
 })
 
-vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "New tab" })
+vim.keymap.set("n", "<leader>n", "<cmd>tabnew<CR>", { desc = "New tab" })
 
 -- terminal
-vim.keymap.set("n", "<leader>tt", ":ToggleTerm<CR>")
-vim.keymap.set("n", "<C-\\>", ":ToggleTerm<CR>")
+local function find_terminal_window()
+	for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		local cfg = vim.api.nvim_win_get_config(win)
+		if vim.bo[buf].buftype == "terminal" and cfg.relative == "" then
+			return win
+		end
+	end
+
+	return nil
+end
+
+local function ensure_normal_mode()
+	if vim.api.nvim_get_mode().mode:sub(1, 1) == "t" then
+		vim.cmd("stopinsert")
+	end
+end
+
+local function toggle_terminal_focus()
+	ensure_normal_mode()
+
+	if vim.bo.buftype == "terminal" then
+		vim.cmd("wincmd p")
+		return
+	end
+
+	local term_win = find_terminal_window()
+	if term_win then
+		vim.api.nvim_set_current_win(term_win)
+		return
+	end
+
+	vim.cmd("ToggleTerm")
+end
+
+local function toggle_terminal_visibility()
+	ensure_normal_mode()
+
+	if vim.bo.buftype == "terminal" then
+		vim.cmd("wincmd p")
+	end
+
+	vim.cmd("ToggleTerm")
+end
+
+vim.keymap.set({ "n", "t" }, "<leader>t", toggle_terminal_focus, { desc = "Toggle [T]erminal focus" })
+vim.keymap.set({ "n", "t" }, "<C-\\>", toggle_terminal_visibility, { desc = "Toggle terminal visibility" })
 
 -- git
 vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })

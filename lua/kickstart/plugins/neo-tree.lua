@@ -18,6 +18,12 @@ return {
   ---@module 'neo-tree'
   ---@type neotree.Config
   opts = {
+    sources = { 'filesystem', 'buffers', 'git_status' },
+    source_selector = {
+      winbar = true,
+      statusline = false,
+    },
+
     -- Unmap the default <space> key to avoid conflicts with which-key and other plugins
     window = {
       mappings = {
@@ -25,6 +31,14 @@ return {
       },
     },
     filesystem = {
+      filtered_items = {
+        visible = true,
+        hide_dotfiles = false,
+        hide_gitignored = false,
+        never_show = {
+          '.git',
+        },
+      },
       window = {
         mappings = {
           ['\\'] = 'close_window',
