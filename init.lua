@@ -630,6 +630,33 @@ require("lazy").setup({
 			-- Enable the following language servers
 			--  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
 			--  See `:help lsp-config` for information about keys and how to configure
+			local terraform_warning_filters = {
+				"declared but not used",
+				"variable has no type",
+				"has no type",
+			}
+
+			local default_publish_diagnostics = vim.lsp.handlers["textDocument/publishDiagnostics"]
+			local function terraform_publish_diagnostics(err, result, ctx, config)
+				if result and result.diagnostics then
+					result.diagnostics = vim.tbl_filter(function(diagnostic)
+						local message = (diagnostic.message or ""):lower()
+						local is_ignored_warning = false
+
+						for _, filter in ipairs(terraform_warning_filters) do
+							if message:find(filter, 1, true) then
+								is_ignored_warning = true
+								break
+							end
+						end
+
+						return not is_ignored_warning
+					end, result.diagnostics)
+				end
+
+				return default_publish_diagnostics(err, result, ctx, config)
+			end
+
 			---@type table<string, vim.lsp.Config>
 			local servers = {
 				-- clangd = {},
@@ -644,8 +671,16 @@ require("lazy").setup({
 				-- ts_ls = {},
 
 				-- Terraform / Terragrunt
-				terraformls = {},
-				tflint = {},
+				terraformls = {
+					handlers = {
+						["textDocument/publishDiagnostics"] = terraform_publish_diagnostics,
+					},
+				},
+				tflint = {
+					handlers = {
+						["textDocument/publishDiagnostics"] = terraform_publish_diagnostics,
+					},
+				},
 
 				-- YAML / GitHub Actions
 				yamlls = {
@@ -1025,7 +1060,7 @@ require("lazy").setup({
 			persist_size = true,
 		},
 	},
-	{ "github/copilot.vim", lazy = false },
+	-- { "github/copilot.vim", lazy = false },
 
 	{
 		"CopilotC-Nvim/CopilotChat.nvim",
@@ -1037,6 +1072,28 @@ require("lazy").setup({
 			-- See Configuration section for options
 		},
 	},
+	{
+		"zbirenbaum/copilot.lua",
+		cmd = "Copilot",
+		event = "InsertEnter",
+		opts = {
+			suggestion = {
+				enabled = true,
+				auto_trigger = true,
+				keymap = {
+					accept = "<C-y>",
+					accept_word = "<M-w>",
+					accept_line = "<M-j>",
+					next = "<M-]>",
+					prev = "<M-[>",
+					dismiss = "<C-]>",
+				},
+			},
+			panel = { enabled = true },
+		},
+	},
+
+
 	{
 		"numToStr/Comment.nvim",
 		opts = {
