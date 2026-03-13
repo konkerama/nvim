@@ -258,6 +258,7 @@ rtp:prepend(lazypath)
 --
 --  To update plugins you can run
 --    :Lazy update
+
 --
 -- NOTE: Here is where you install your plugins.
 require("lazy").setup({
@@ -995,7 +996,7 @@ require("lazy").setup({
 	},
 	{ "fatih/vim-go" },
 	{ "charlespascoe/vim-go-syntax" },
-	--{ "neoclide/coc.nvim" },
+	{ "neoclide/coc.nvim" },
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
@@ -1126,5 +1127,15 @@ vim.keymap.set("n", "<C-\\>", ":ToggleTerm<CR>")
 -- git
 vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
 
--- Prevent Neovim from adding trailing newlines to avoid noisy diffs across repos
-vim.opt.fixendofline = false
+local terraform_eof_augroup = vim.api.nvim_create_augroup("terraform-eof", { clear = true })
+
+-- Terraform tools conventionally expect a trailing newline at EOF.
+-- Force Terraform buffers to that convention to avoid PR-only churn.
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile", "BufWritePre" }, {
+	group = terraform_eof_augroup,
+	pattern = { "*.tf", "*.tfvars", "*.hcl" },
+	callback = function(args)
+		vim.bo[args.buf].fixendofline = true
+		vim.bo[args.buf].endofline = true
+	end,
+})
