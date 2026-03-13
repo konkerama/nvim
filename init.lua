@@ -1068,8 +1068,89 @@ require("lazy").setup({
 			{ "nvim-lua/plenary.nvim", branch = "master" },
 		},
 		build = "make tiktoken",
+		cmd = {
+			"CopilotChat",
+			"CopilotChatOpen",
+			"CopilotChatClose",
+			"CopilotChatToggle",
+			"CopilotChatPrompts",
+			"CopilotChatModels",
+		},
+		keys = {
+			{ "<leader>cc", "<cmd>CopilotChatToggle<CR>", desc = "Copilot Chat: Toggle" },
+			{ "<leader>cp", "<cmd>CopilotChatPrompts<CR>", desc = "Copilot Chat: Prompts" },
+			{
+				"<leader>ce",
+				function()
+					vim.ui.input({ prompt = "Copilot edit current file: " }, function(input)
+						if not input or input == "" then
+							return
+						end
+
+						local chat = require("CopilotChat")
+						chat.ask(
+							"#buffer:active\n"
+								.. input
+								.. "\nReturn two sections in this order:"
+								.. "\n1) A short human-readable summary of the changes."
+								.. "\n2) A unified diff patch I can apply."
+								.. "\nDo not emit tool calls unless I explicitly ask for tool calls."
+						)
+					end)
+				end,
+				desc = "Copilot Chat: Edit current file",
+			},
+			{
+				"<leader>ce",
+				function()
+					vim.ui.input({ prompt = "Copilot edit selection: " }, function(input)
+						if not input or input == "" then
+							return
+						end
+
+						local chat = require("CopilotChat")
+						chat.ask(
+							"#selection\n"
+								.. input
+								.. "\nReturn two sections in this order:"
+								.. "\n1) A short human-readable summary of the changes."
+								.. "\n2) A unified diff patch for the selected file changes I can apply."
+								.. "\nDo not emit tool calls unless I explicitly ask for tool calls."
+						)
+					end)
+				end,
+				mode = "v",
+				desc = "Copilot Chat: Edit selection",
+			},
+		},
 		opts = {
-			-- See Configuration section for options
+			tools = "copilot",
+			resources = { "buffer", "selection", "gitdiff" },
+			diff = "unified",
+			stop_on_function_failure = true,
+			auto_insert_mode = true,
+			mappings = {
+				accept_diff = {
+					normal = "<C-y>",
+					insert = "<C-y>",
+				},
+			},
+			prompts = {
+				WriteBuffer = {
+					prompt = "#buffer:active\nModify the current file according to my request. Return two sections in this order: 1) short human-readable summary, 2) unified diff patch. Do not emit tool calls unless I explicitly ask for tool calls.",
+					mapping = "<leader>cw",
+					description = "Copilot Chat: Write changes to current buffer",
+				},
+				ReplaceSelection = {
+					prompt = "#selection\nModify only the selected code. Return two sections in this order: 1) short human-readable summary, 2) unified diff patch. Do not emit tool calls unless I explicitly ask for tool calls.",
+					mapping = "<leader>cr",
+					description = "Copilot Chat: Replace selected code",
+				},
+			},
+			window = {
+				layout = "vertical",
+				width = 0.45,
+			},
 		},
 	},
 	{
@@ -1124,18 +1205,18 @@ require("lazy").setup({
 			{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" }
 		}
 	},
-	{
-		"rmagatti/auto-session",
-		lazy = false,
+	-- {
+	-- 	"rmagatti/auto-session",
+	-- 	lazy = false,
 
-		---enables autocomplete for opts
-		---@module "auto-session"
-		---@type AutoSession.Config
-		opts = {
-			suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
-			-- log_level = 'debug',
-		},
-	},
+	-- 	---enables autocomplete for opts
+	-- 	---@module "auto-session"
+	-- 	---@type AutoSession.Config
+	-- 	opts = {
+	-- 		suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+	-- 		-- log_level = 'debug',
+	-- 	},
+	-- },
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
