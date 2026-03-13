@@ -1020,6 +1020,8 @@ require("lazy").setup({
 		},
 	},
 	{ "nvim-tree/nvim-web-devicons", lazy = true },
+	{ "editorconfig/editorconfig-vim" },
+
 	--
 	-- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
 	-- Or use telescope!
@@ -1123,3 +1125,6 @@ vim.keymap.set("n", "<C-\\>", ":ToggleTerm<CR>")
 
 -- git
 vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
+
+-- Prevent Neovim from adding trailing newlines to avoid noisy diffs across repos
+vim.opt.fixendofline = false
