@@ -1079,49 +1079,8 @@ require("lazy").setup({
 		keys = {
 			{ "<leader>cc", "<cmd>CopilotChatToggle<CR>", desc = "Copilot Chat: Toggle" },
 			{ "<leader>cp", "<cmd>CopilotChatPrompts<CR>", desc = "Copilot Chat: Prompts" },
-			{
-				"<leader>ce",
-				function()
-					vim.ui.input({ prompt = "Copilot edit current file: " }, function(input)
-						if not input or input == "" then
-							return
-						end
-
-						local chat = require("CopilotChat")
-						chat.ask(
-							"#buffer:active\n"
-								.. input
-								.. "\nReturn two sections in this order:"
-								.. "\n1) A short human-readable summary of the changes."
-								.. "\n2) A unified diff patch I can apply."
-								.. "\nDo not emit tool calls unless I explicitly ask for tool calls."
-						)
-					end)
-				end,
-				desc = "Copilot Chat: Edit current file",
-			},
-			{
-				"<leader>ce",
-				function()
-					vim.ui.input({ prompt = "Copilot edit selection: " }, function(input)
-						if not input or input == "" then
-							return
-						end
-
-						local chat = require("CopilotChat")
-						chat.ask(
-							"#selection\n"
-								.. input
-								.. "\nReturn two sections in this order:"
-								.. "\n1) A short human-readable summary of the changes."
-								.. "\n2) A unified diff patch for the selected file changes I can apply."
-								.. "\nDo not emit tool calls unless I explicitly ask for tool calls."
-						)
-					end)
-				end,
-				mode = "v",
-				desc = "Copilot Chat: Edit selection",
-			},
+			{ "<leader>ce", "<cmd>CopilotChat<CR>", desc = "Copilot Chat: Open" },
+			{ "<leader>ce", "<cmd>CopilotChat<CR>", mode = "v", desc = "Copilot Chat: Open" },
 		},
 		opts = {
 			tools = "copilot",
@@ -1133,18 +1092,6 @@ require("lazy").setup({
 				accept_diff = {
 					normal = "<C-y>",
 					insert = "<C-y>",
-				},
-			},
-			prompts = {
-				WriteBuffer = {
-					prompt = "#buffer:active\nModify the current file according to my request. Return two sections in this order: 1) short human-readable summary, 2) unified diff patch. Do not emit tool calls unless I explicitly ask for tool calls.",
-					mapping = "<leader>cw",
-					description = "Copilot Chat: Write changes to current buffer",
-				},
-				ReplaceSelection = {
-					prompt = "#selection\nModify only the selected code. Return two sections in this order: 1) short human-readable summary, 2) unified diff patch. Do not emit tool calls unless I explicitly ask for tool calls.",
-					mapping = "<leader>cr",
-					description = "Copilot Chat: Replace selected code",
 				},
 			},
 			window = {
@@ -1170,10 +1117,10 @@ require("lazy").setup({
 					dismiss = "<C-]>",
 				},
 			},
+
 			panel = { enabled = true },
 		},
 	},
-
 
 	{
 		"numToStr/Comment.nvim",
@@ -1188,22 +1135,22 @@ require("lazy").setup({
 		"NeogitOrg/neogit",
 		lazy = true,
 		dependencies = {
-			"nvim-lua/plenary.nvim",         -- required
+			"nvim-lua/plenary.nvim", -- required
 
 			-- Only one of these is needed.
-			"sindrets/diffview.nvim",        -- optional
-			"esmuellert/codediff.nvim",      -- optional
+			"sindrets/diffview.nvim", -- optional
+			"esmuellert/codediff.nvim", -- optional
 
 			-- Only one of these is needed.
 			"nvim-telescope/telescope.nvim", -- optional
-			"ibhagwan/fzf-lua",              -- optional
-			"nvim-mini/mini.pick",           -- optional
-			"folke/snacks.nvim",             -- optional
+			"ibhagwan/fzf-lua", -- optional
+			"nvim-mini/mini.pick", -- optional
+			"folke/snacks.nvim", -- optional
 		},
 		cmd = "Neogit",
 		keys = {
-			{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" }
-		}
+			{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" },
+		},
 	},
 	-- {
 	-- 	"rmagatti/auto-session",
