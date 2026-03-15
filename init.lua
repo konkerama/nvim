@@ -1068,8 +1068,36 @@ require("lazy").setup({
 			{ "nvim-lua/plenary.nvim", branch = "master" },
 		},
 		build = "make tiktoken",
+		cmd = {
+			"CopilotChat",
+			"CopilotChatOpen",
+			"CopilotChatClose",
+			"CopilotChatToggle",
+			"CopilotChatPrompts",
+			"CopilotChatModels",
+		},
+		keys = {
+			{ "<leader>cc", "<cmd>CopilotChatToggle<CR>", desc = "Copilot Chat: Toggle" },
+			{ "<leader>cp", "<cmd>CopilotChatPrompts<CR>", desc = "Copilot Chat: Prompts" },
+			{ "<leader>ce", "<cmd>CopilotChat<CR>", desc = "Copilot Chat: Open" },
+			{ "<leader>ce", "<cmd>CopilotChat<CR>", mode = "v", desc = "Copilot Chat: Open" },
+		},
 		opts = {
-			-- See Configuration section for options
+			tools = "copilot",
+			resources = { "buffer", "selection", "gitdiff" },
+			diff = "unified",
+			stop_on_function_failure = true,
+			auto_insert_mode = true,
+			mappings = {
+				accept_diff = {
+					normal = "<C-y>",
+					insert = "<C-y>",
+				},
+			},
+			window = {
+				layout = "vertical",
+				width = 0.45,
+			},
 		},
 	},
 	{
@@ -1089,10 +1117,10 @@ require("lazy").setup({
 					dismiss = "<C-]>",
 				},
 			},
+
 			panel = { enabled = true },
 		},
 	},
-
 
 	{
 		"numToStr/Comment.nvim",
@@ -1107,35 +1135,35 @@ require("lazy").setup({
 		"NeogitOrg/neogit",
 		lazy = true,
 		dependencies = {
-			"nvim-lua/plenary.nvim",         -- required
+			"nvim-lua/plenary.nvim", -- required
 
 			-- Only one of these is needed.
-			"sindrets/diffview.nvim",        -- optional
-			"esmuellert/codediff.nvim",      -- optional
+			"sindrets/diffview.nvim", -- optional
+			"esmuellert/codediff.nvim", -- optional
 
 			-- Only one of these is needed.
 			"nvim-telescope/telescope.nvim", -- optional
-			"ibhagwan/fzf-lua",              -- optional
-			"nvim-mini/mini.pick",           -- optional
-			"folke/snacks.nvim",             -- optional
+			"ibhagwan/fzf-lua", -- optional
+			"nvim-mini/mini.pick", -- optional
+			"folke/snacks.nvim", -- optional
 		},
 		cmd = "Neogit",
 		keys = {
-			{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" }
-		}
-	},
-	{
-		"rmagatti/auto-session",
-		lazy = false,
-
-		---enables autocomplete for opts
-		---@module "auto-session"
-		---@type AutoSession.Config
-		opts = {
-			suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
-			-- log_level = 'debug',
+			{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" },
 		},
 	},
+	-- {
+	-- 	"rmagatti/auto-session",
+	-- 	lazy = false,
+
+	-- 	---enables autocomplete for opts
+	-- 	---@module "auto-session"
+	-- 	---@type AutoSession.Config
+	-- 	opts = {
+	-- 		suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+	-- 		-- log_level = 'debug',
+	-- 	},
+	-- },
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
