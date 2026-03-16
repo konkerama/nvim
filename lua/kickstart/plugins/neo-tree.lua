@@ -31,6 +31,8 @@ return {
       },
     },
     filesystem = {
+      -- Keep the tree in sync when files change outside of Neovim.
+      use_libuv_file_watcher = true,
       filtered_items = {
         visible = true,
         hide_dotfiles = false,

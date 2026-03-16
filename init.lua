@@ -1294,6 +1294,43 @@ local function refresh_neotree_winbar()
 	end
 end
 
+-- Improve responsiveness to external file & git changes.
+vim.opt.autoread = true
+
+local neotree_refresh_pending = false
+local function refresh_neotree_sources()
+	if neotree_refresh_pending then
+		return
+	end
+	neotree_refresh_pending = true
+
+	vim.defer_fn(function()
+		neotree_refresh_pending = false
+
+		pcall(vim.cmd, "silent! checktime")
+
+		local has_neotree = false
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			local buf = vim.api.nvim_win_get_buf(win)
+			if vim.bo[buf].filetype == "neo-tree" then
+				has_neotree = true
+				break
+			end
+		end
+		if not has_neotree then
+			return
+		end
+
+		local ok, command = pcall(require, "neo-tree.command")
+		if not ok then
+			return
+		end
+
+		pcall(command.execute, { action = "refresh", source = "filesystem" })
+		pcall(command.execute, { action = "refresh", source = "git_status" })
+	end, 80)
+end
+
 local neotree_start_width = nil
 
 local function set_cwd_from_start_arg()
@@ -1330,7 +1367,11 @@ set_neotree_winbar_highlights()
 vim.api.nvim_create_autocmd({ "FileType", "BufEnter", "DirChanged", "FocusGained", "TermClose" }, {
 	group = neotree_branch_augroup,
 	pattern = "*",
-	callback = refresh_neotree_winbar,
+	callback = function()
+		refresh_neotree_winbar()
+		-- Keep filesystem + git_status panes current (especially after external changes).
+		refresh_neotree_sources()
+	end,
 })
 
 vim.api.nvim_create_autocmd("ColorScheme", {
@@ -1343,7 +1384,16 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 vim.api.nvim_create_autocmd("User", {
 	group = neotree_branch_augroup,
 	pattern = "FugitiveChanged",
-	callback = refresh_neotree_winbar,
+	callback = function()
+		refresh_neotree_winbar()
+		refresh_neotree_sources()
+	end,
+})
+
+vim.api.nvim_create_autocmd({ "FocusGained", "VimResume" }, {
+	group = neotree_branch_augroup,
+	pattern = "*",
+	callback = refresh_neotree_sources,
 })
 
 vim.api.nvim_create_autocmd("VimEnter", {
