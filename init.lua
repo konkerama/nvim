@@ -220,6 +220,18 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- CUSTOM CONFIG:
+-- Disable Neovim's built-in EditorConfig (runtime/plugin/editorconfig.lua).
+-- It can override buffer-local EOF options like 'endofline'/'fixendofline'.
+-- We keep the separate plugin `editorconfig/editorconfig-vim` enabled instead.
+vim.g.editorconfig = false
+
+-- Keep EditorConfig active, but do not force trailing newline at EOF.
+vim.g.EditorConfig_disable_rules = { "insert_final_newline" }
+vim.g.EditorConfig_exclude_patterns = { ".*\\.md$", ".*\\.mdx$" }
+-- Do not auto-normalize EOF newlines when writing files.
+vim.o.fixendofline = false
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -1501,15 +1513,3 @@ vim.keymap.set({ "n", "t" }, "<C-\\>", toggle_terminal_visibility, { desc = "Tog
 -- git
 vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
 
-local terraform_eof_augroup = vim.api.nvim_create_augroup("terraform-eof", { clear = true })
-
--- Terraform tools conventionally expect a trailing newline at EOF.
--- Force Terraform buffers to that convention to avoid PR-only churn.
-vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile", "BufWritePre" }, {
-	group = terraform_eof_augroup,
-	pattern = { "*.tf", "*.tfvars", "*.hcl" },
-	callback = function(args)
-		vim.bo[args.buf].fixendofline = true
-		vim.bo[args.buf].endofline = true
-	end,
-})
