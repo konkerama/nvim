@@ -1254,16 +1254,38 @@ require("lazy").setup({
 --
 --
 -- Custom keybindings:
+local function is_neotree_ft(ft)
+	return type(ft) == "string" and ft:find("neo-tree", 1, true) ~= nil
+end
+
 vim.keymap.set("n", "<leader>e", function()
-	if vim.bo.filetype == "neo-tree" then
+	if is_neotree_ft(vim.bo.filetype) then
 		vim.cmd("wincmd p") -- jump back to previous (editor) window
+
+		-- If the "previous" window is also Neo-tree (can happen with some Neo-tree UI states),
+		-- fall back to the largest non-Neo-tree window in the current tab.
+		if is_neotree_ft(vim.bo.filetype) then
+			local best_win, best_width = nil, -1
+			for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+				local buf = vim.api.nvim_win_get_buf(win)
+				if not is_neotree_ft(vim.bo[buf].filetype) then
+					local width = vim.api.nvim_win_get_width(win)
+					if width > best_width then
+						best_win, best_width = win, width
+					end
+				end
+			end
+			if best_win then
+				vim.api.nvim_set_current_win(best_win)
+			end
+		end
 		return
 	end
 
 	-- Focus the existing left Neo-tree window (keeps current source: files/buffers/git).
 	for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
 		local buf = vim.api.nvim_win_get_buf(win)
-		if vim.bo[buf].filetype == "neo-tree" then
+		if is_neotree_ft(vim.bo[buf].filetype) then
 			local pos = vim.api.nvim_win_get_position(win)
 			if pos[2] == 0 then
 				vim.api.nvim_set_current_win(win)
