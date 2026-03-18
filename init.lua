@@ -1061,6 +1061,7 @@ require("lazy").setup({
 	require("kickstart.plugins.neo-tree"),
 	require("kickstart.plugins.gitsigns"), -- adds gitsigns recommend keymaps
 	{ "tpope/vim-fugitive", lazy = false },
+	{ "tpope/vim-rhubarb" },
 	{
 		"akinsho/toggleterm.nvim",
 		version = "*",
@@ -1089,7 +1090,7 @@ require("lazy").setup({
 		-- setting the keybinding for LazyGit with 'keys' is recommended in
 		-- order to load the plugin when the command is run for the first time
 		keys = {
-			{ "<leader>lg", "<cmd>LazyGit<cr>", desc = "LazyGit" },
+			{ "<leader>gg", "<cmd>LazyGit<cr>", desc = "LazyGit" },
 		},
 	},
 	-- { "github/copilot.vim", lazy = false },
@@ -1162,10 +1163,10 @@ require("lazy").setup({
 	},
 	{ "fatih/vim-go" },
 	{ "charlespascoe/vim-go-syntax" },
-	{
-		"neoclide/coc.nvim",
-		branch = "release",
-	},
+	-- {
+	-- 	"neoclide/coc.nvim",
+	-- 	branch = "release",
+	-- },
 	{
 		"NeogitOrg/neogit",
 		lazy = true,
@@ -1183,9 +1184,9 @@ require("lazy").setup({
 			"folke/snacks.nvim", -- optional
 		},
 		cmd = "Neogit",
-		keys = {
-			{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" },
-		},
+		-- keys = {
+		-- 	{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" },
+		-- },
 	},
 	-- {
 	-- 	"rmagatti/auto-session",
@@ -1536,4 +1537,107 @@ vim.keymap.set({ "n", "t" }, "<leader>t", toggle_terminal_focus, { desc = "Toggl
 vim.keymap.set({ "n", "t" }, "<C-\\>", toggle_terminal_visibility, { desc = "Toggle terminal visibility" })
 
 -- git
-vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
+local function find_git_backed_window()
+	for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		local buftype = vim.bo[buf].buftype
+		local filetype = vim.bo[buf].filetype
+		local name = vim.api.nvim_buf_get_name(buf)
+		if buftype == "" and filetype ~= "gitsigns-blame" and name ~= "" then
+			local file_dir = vim.fn.fnamemodify(name, ":h")
+			local root_result = vim.system({ "git", "-C", file_dir, "rev-parse", "--show-toplevel" }, { text = true }):wait()
+			if root_result.code == 0 then
+				return win, buf
+			end
+		end
+	end
+
+	return nil, nil
+end
+
+local function open_github_commit(commit, win)
+	vim.api.nvim_win_call(win, function()
+		vim.cmd("GBrowse " .. commit)
+	end)
+end
+
+local function get_commit_for_buffer_line(bufnr, line)
+	local file_path = vim.api.nvim_buf_get_name(bufnr)
+
+	if file_path == "" then
+		return nil, "Current buffer has no file path", vim.log.levels.WARN
+	end
+
+	local file_dir = vim.fn.fnamemodify(file_path, ":h")
+	local root_result = vim.system({ "git", "-C", file_dir, "rev-parse", "--show-toplevel" }, { text = true }):wait()
+	if root_result.code ~= 0 then
+		return nil, "Current file is not inside a git repository", vim.log.levels.WARN
+	end
+
+	local repo_root = vim.trim(root_result.stdout or "")
+	local relative_path = vim.fs.relpath(repo_root, file_path)
+	if not relative_path then
+		return nil, "Could not resolve file path inside repository", vim.log.levels.ERROR
+	end
+
+	local blame_result = vim.system({
+		"git",
+		"-C",
+		repo_root,
+		"blame",
+		"--line-porcelain",
+		"-L",
+		string.format("%d,+1", line),
+		"--",
+		relative_path,
+	}, { text = true }):wait()
+
+	if blame_result.code ~= 0 then
+		local message = vim.trim(blame_result.stderr or "")
+		if message == "" then
+			message = "Failed to blame current line"
+		end
+		return nil, message, vim.log.levels.ERROR
+	end
+
+	local first_line = vim.split(blame_result.stdout or "", "\n", { plain = true })[1] or ""
+	local commit = first_line:match("^([0-9a-f]+)%s")
+	if not commit or commit:match("^0+$") then
+		return nil, "Current line is not committed yet", vim.log.levels.WARN
+	end
+
+	return commit, nil, nil
+end
+
+local function open_github_commit_for_current_line()
+	local bufnr = vim.api.nvim_get_current_buf()
+	local filetype = vim.bo[bufnr].filetype
+	local line = vim.api.nvim_win_get_cursor(0)[1]
+	local target_bufnr = bufnr
+	local target_win = vim.api.nvim_get_current_win()
+
+	if filetype == "gitsigns-blame" then
+		local source_win, source_buf = find_git_backed_window()
+		if not source_win or not source_buf then
+			vim.notify("Could not find the source git buffer for this blame pane", vim.log.levels.ERROR)
+			return
+		end
+
+		target_bufnr = source_buf
+		target_win = source_win
+	end
+
+	local commit, message, level = get_commit_for_buffer_line(target_bufnr, line)
+	if not commit then
+		vim.notify(message, level)
+		return
+	end
+
+	open_github_commit(commit, target_win)
+end
+
+-- vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
+vim.keymap.set("n", "<leader>gb", "<cmd>GBrowse<CR>", { desc = "[G]it [B]rowse" })
+vim.keymap.set("n", "<leader>gB", open_github_commit_for_current_line, { desc = "[G]it browse causing commit" })
+vim.keymap.set("v", "<leader>gb", ":'<,'>GBrowse<CR>", { desc = "[G]it [B]rowse selection" })
+
