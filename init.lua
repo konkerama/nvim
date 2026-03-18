@@ -1162,7 +1162,10 @@ require("lazy").setup({
 	},
 	{ "fatih/vim-go" },
 	{ "charlespascoe/vim-go-syntax" },
-	{ "neoclide/coc.nvim" },
+	{
+		"neoclide/coc.nvim",
+		branch = "release",
+	},
 	{
 		"NeogitOrg/neogit",
 		lazy = true,
@@ -1534,4 +1537,3 @@ vim.keymap.set({ "n", "t" }, "<C-\\>", toggle_terminal_visibility, { desc = "Tog
 
 -- git
 vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
-
