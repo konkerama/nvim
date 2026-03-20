@@ -1116,6 +1116,7 @@ require("lazy").setup({
 			{ "<leader>ce", "<cmd>CopilotChat<CR>", mode = "v", desc = "Copilot Chat: Open" },
 		},
 		opts = {
+			model = "claude-sonnet-4.5",
 			tools = "copilot",
 			resources = { "buffer", "selection", "gitdiff" },
 			diff = "unified",
@@ -1152,6 +1153,19 @@ require("lazy").setup({
 			},
 
 			panel = { enabled = true },
+		},
+	},
+	{
+		"olimorris/codecompanion.nvim",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-treesitter/nvim-treesitter",
+		},
+		opts = {
+			-- NOTE: The log_level is in `opts.opts`
+			opts = {
+				log_level = "DEBUG", -- or "TRACE"
+			},
 		},
 	},
 
@@ -1545,7 +1559,8 @@ local function find_git_backed_window()
 		local name = vim.api.nvim_buf_get_name(buf)
 		if buftype == "" and filetype ~= "gitsigns-blame" and name ~= "" then
 			local file_dir = vim.fn.fnamemodify(name, ":h")
-			local root_result = vim.system({ "git", "-C", file_dir, "rev-parse", "--show-toplevel" }, { text = true }):wait()
+			local root_result = vim.system({ "git", "-C", file_dir, "rev-parse", "--show-toplevel" }, { text = true })
+				:wait()
 			if root_result.code == 0 then
 				return win, buf
 			end
@@ -1640,4 +1655,3 @@ end
 vim.keymap.set("n", "<leader>gb", "<cmd>GBrowse<CR>", { desc = "[G]it [B]rowse" })
 vim.keymap.set("n", "<leader>gB", open_github_commit_for_current_line, { desc = "[G]it browse causing commit" })
 vim.keymap.set("v", "<leader>gb", ":'<,'>GBrowse<CR>", { desc = "[G]it [B]rowse selection" })
-
