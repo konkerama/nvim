@@ -249,6 +249,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+local treesitter_parser_dir = vim.fn.stdpath("data") .. "/lazy/nvim-treesitter"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
 	local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
@@ -998,6 +999,11 @@ require("lazy").setup({
 		branch = "main",
 		-- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
 		config = function()
+			require("nvim-treesitter").setup({
+				install_dir = treesitter_parser_dir,
+			})
+			vim.opt.runtimepath:prepend(vim.fs.joinpath(treesitter_parser_dir, ""))
+
 			local parsers = {
 				"bash",
 				"c",
@@ -1866,6 +1872,12 @@ local function open_github_commit_for_current_line()
 
 	open_github_commit(commit, target_win)
 end
+
+-- fold settings
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevel = 99
+vim.opt.foldenable = true
 
 -- vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
 vim.keymap.set("n", "<leader>gb", "<cmd>GBrowse<CR>", { desc = "[G]it [B]rowse" })
