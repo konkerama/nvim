@@ -336,6 +336,8 @@ require("lazy").setup({
 			-- Document existing key chains
 			spec = {
 				{ "<leader>s", group = "[S]earch", mode = { "n", "v" } },
+				{ "<leader>d", group = "[D]ebug" },
+				{ "<leader>R", group = "[R]un tests" },
 				{ "<leader>t", group = "[T]oggle" },
 				{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
 				{ "gr", group = "LSP Actions", mode = { "n" } },
@@ -1054,7 +1056,7 @@ require("lazy").setup({
 	--  Here are some example plugins that I've included in the Kickstart repository.
 	--  Uncomment any of the lines below to enable them (you will need to restart nvim).
 	--
-	-- require 'kickstart.plugins.debug',
+	require 'kickstart.plugins.debug',
 	require("kickstart.plugins.indent_line"),
 	-- require 'kickstart.plugins.lint',
 	-- require 'kickstart.plugins.autopairs',
@@ -1095,45 +1097,45 @@ require("lazy").setup({
 	},
 	-- { "github/copilot.vim", lazy = false },
 
-	{
-		"CopilotC-Nvim/CopilotChat.nvim",
-		dependencies = {
-			{ "nvim-lua/plenary.nvim", branch = "master" },
-		},
-		build = "make tiktoken",
-		cmd = {
-			"CopilotChat",
-			"CopilotChatOpen",
-			"CopilotChatClose",
-			"CopilotChatToggle",
-			"CopilotChatPrompts",
-			"CopilotChatModels",
-		},
-		keys = {
-			{ "<leader>cc", "<cmd>CopilotChatToggle<CR>", desc = "Copilot Chat: Toggle" },
-			{ "<leader>cp", "<cmd>CopilotChatPrompts<CR>", desc = "Copilot Chat: Prompts" },
-			{ "<leader>ce", "<cmd>CopilotChat<CR>", desc = "Copilot Chat: Open" },
-			{ "<leader>ce", "<cmd>CopilotChat<CR>", mode = "v", desc = "Copilot Chat: Open" },
-		},
-		opts = {
-			model = "claude-sonnet-4.5",
-			tools = "copilot",
-			resources = { "buffer", "selection", "gitdiff" },
-			diff = "unified",
-			stop_on_function_failure = true,
-			auto_insert_mode = true,
-			mappings = {
-				accept_diff = {
-					normal = "<C-y>",
-					insert = "<C-y>",
-				},
-			},
-			window = {
-				layout = "vertical",
-				width = 0.45,
-			},
-		},
-	},
+	-- {
+	-- 	"CopilotC-Nvim/CopilotChat.nvim",
+	-- 	dependencies = {
+	-- 		{ "nvim-lua/plenary.nvim", branch = "master" },
+	-- 	},
+	-- 	build = "make tiktoken",
+	-- 	cmd = {
+	-- 		"CopilotChat",
+	-- 		"CopilotChatOpen",
+	-- 		"CopilotChatClose",
+	-- 		"CopilotChatToggle",
+	-- 		"CopilotChatPrompts",
+	-- 		"CopilotChatModels",
+	-- 	},
+	-- 	keys = {
+	-- 		{ "<leader>cc", "<cmd>CopilotChatToggle<CR>", desc = "Copilot Chat: Toggle" },
+	-- 		{ "<leader>cp", "<cmd>CopilotChatPrompts<CR>", desc = "Copilot Chat: Prompts" },
+	-- 		{ "<leader>ce", "<cmd>CopilotChat<CR>", desc = "Copilot Chat: Open" },
+	-- 		{ "<leader>ce", "<cmd>CopilotChat<CR>", mode = "v", desc = "Copilot Chat: Open" },
+	-- 	},
+	-- 	opts = {
+	-- 		model = "claude-sonnet-4.5",
+	-- 		tools = "copilot",
+	-- 		resources = { "buffer", "selection", "gitdiff" },
+	-- 		diff = "unified",
+	-- 		stop_on_function_failure = true,
+	-- 		auto_insert_mode = true,
+	-- 		mappings = {
+	-- 			accept_diff = {
+	-- 				normal = "<C-y>",
+	-- 				insert = "<C-y>",
+	-- 			},
+	-- 		},
+	-- 		window = {
+	-- 			layout = "vertical",
+	-- 			width = 0.45,
+	-- 		},
+	-- 	},
+	-- },
 	{
 		"zbirenbaum/copilot.lua",
 		cmd = "Copilot",
@@ -1161,6 +1163,16 @@ require("lazy").setup({
 			"nvim-lua/plenary.nvim",
 			"nvim-treesitter/nvim-treesitter",
 		},
+		keys = function()
+			local chat_open = "<cmd>CodeCompanionChat<CR>"
+
+			return {
+				{ "<leader>cc", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Toggle" },
+				{ "<leader>cp", "<cmd>CodeCompanionActions<CR>", desc = "CodeCompanion: Prompts/Actions" },
+				{ "<leader>ce", chat_open, desc = "CodeCompanion: Open" },
+				{ "<leader>ce", chat_open, mode = "v", desc = "CodeCompanion: Open" },
+			}
+		end,
 		opts = {
 			-- NOTE: The log_level is in `opts.opts`
 			opts = {
@@ -1201,6 +1213,210 @@ require("lazy").setup({
 		-- keys = {
 		-- 	{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" },
 		-- },
+	},
+	-- {
+	-- 	"mfussenegger/nvim-dap",
+	-- 	keys = {
+	-- 		{
+	-- 			"<leader>dc",
+	-- 			function()
+	-- 				require("dap").continue()
+	-- 			end,
+	-- 			desc = "[D]ebug: [C]ontinue",
+	-- 		},
+	-- 		{
+	-- 			"<leader>db",
+	-- 			function()
+	-- 				require("dap").toggle_breakpoint()
+	-- 			end,
+	-- 			desc = "[D]ebug: Toggle [B]reakpoint",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dB",
+	-- 			function()
+	-- 				require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
+	-- 			end,
+	-- 			desc = "[D]ebug: Conditional [B]reakpoint",
+	-- 		},
+	-- 		{
+	-- 			"<leader>di",
+	-- 			function()
+	-- 				require("dap").step_into()
+	-- 			end,
+	-- 			desc = "[D]ebug: Step [I]nto",
+	-- 		},
+	-- 		{
+	-- 			"<leader>do",
+	-- 			function()
+	-- 				require("dap").step_over()
+	-- 			end,
+	-- 			desc = "[D]ebug: Step [O]ver",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dO",
+	-- 			function()
+	-- 				require("dap").step_out()
+	-- 			end,
+	-- 			desc = "[D]ebug: Step [O]ut",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dr",
+	-- 			function()
+	-- 				require("dap").repl.open()
+	-- 			end,
+	-- 			desc = "[D]ebug: Open [R]EPL",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dl",
+	-- 			function()
+	-- 				require("dap").run_last()
+	-- 			end,
+	-- 			desc = "[D]ebug: Run [L]ast",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dx",
+	-- 			function()
+	-- 				require("dap").terminate()
+	-- 			end,
+	-- 			desc = "[D]ebug: Terminate",
+	-- 		},
+	-- 	},
+	-- },
+	-- {
+	-- 	"leoluz/nvim-dap-go",
+	-- 	ft = { "go" },
+	-- 	dependencies = {
+	-- 		"mfussenegger/nvim-dap",
+	-- 	},
+	-- 	build = function()
+	-- 		vim.system({ "go", "install", "github.com/go-delve/delve/cmd/dlv@latest" }):wait()
+	-- 	end,
+	-- 	opts = function()
+	-- 		local delve_path = vim.fn.exepath("dlv")
+	-- 		if delve_path == "" then
+	-- 			local gopath = vim.trim(vim.fn.system("go env GOPATH"))
+	-- 			delve_path = gopath .. "/bin/dlv"
+	-- 		end
+
+	-- 		return {
+	-- 			delve = {
+	-- 				path = delve_path,
+	-- 			},
+	-- 		}
+	-- 	end,
+	-- 	keys = {
+	-- 		{
+	-- 			"<leader>dt",
+	-- 			function()
+	-- 				require("dap-go").debug_test()
+	-- 			end,
+	-- 			desc = "[D]ebug nearest [T]est",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dT",
+	-- 			function()
+	-- 				require("dap-go").debug_last_test()
+	-- 			end,
+	-- 			desc = "[D]ebug last [T]est",
+	-- 		},
+	-- 	},
+	-- },
+	{
+		"nvim-neotest/neotest",
+		ft = { "go" },
+		dependencies = {
+			"nvim-neotest/nvim-nio",
+			"nvim-lua/plenary.nvim",
+			"antoinemadec/FixCursorHold.nvim",
+			"nvim-treesitter/nvim-treesitter",
+			{
+				"fredrikaverpil/neotest-golang",
+				version = "*",
+				build = function()
+					vim.system({ "go", "install", "gotest.tools/gotestsum@latest" }):wait()
+				end,
+			},
+		},
+		keys = {
+			{
+				"<leader>Rn",
+				function()
+					require("neotest").run.run()
+				end,
+				desc = "Run [N]earest test",
+			},
+			{
+				"<leader>Rf",
+				function()
+					require("neotest").run.run(vim.fn.expand("%"))
+				end,
+				desc = "Run current test [F]ile",
+			},
+			{
+				"<leader>Rp",
+				function()
+					require("neotest").run.run(vim.fn.expand("%:p:h"))
+				end,
+				desc = "Run current [P]ackage tests",
+			},
+			{
+				"<leader>Ra",
+				function()
+					local file_path = vim.fn.expand("%:p")
+					local root = vim.fs.root(file_path, { "go.work", "go.mod", ".git" }) or vim.fn.getcwd()
+					require("neotest").run.run(root)
+				end,
+				desc = "Run [A]ll tests",
+			},
+			{
+				"<leader>Rl",
+				function()
+					require("neotest").run.run_last()
+				end,
+				desc = "Run [L]ast test",
+			},
+			{
+				"<leader>Ro",
+				function()
+					require("neotest").output.open({ last_run = true, enter = true, auto_close = true })
+				end,
+				desc = "Open last test [O]utput",
+			},
+			{
+				"<leader>Rs",
+				function()
+					require("neotest").summary.toggle()
+				end,
+				desc = "Toggle test [S]ummary",
+			},
+			{
+				"<leader>Rd",
+				function()
+					require("neotest").run.run({ suite = false, strategy = "dap" })
+				end,
+				desc = "[D]ebug nearest test",
+			},
+		},
+		config = function()
+			local neotest_ns = vim.api.nvim_create_namespace("neotest")
+			vim.diagnostic.config({
+				virtual_text = {
+					format = function(diagnostic)
+						local message = diagnostic.message:gsub("\n", " "):gsub("\t", " "):gsub("%s+", " ")
+						return message:gsub("^%s+", "")
+					end,
+				},
+			}, neotest_ns)
+
+			require("neotest").setup({
+				adapters = {
+					require("neotest-golang")({
+						runner = "gotestsum",
+						dap_mode = "dap-go",
+					}),
+				},
+			})
+		end,
 	},
 	-- {
 	-- 	"rmagatti/auto-session",
@@ -1655,3 +1871,27 @@ end
 vim.keymap.set("n", "<leader>gb", "<cmd>GBrowse<CR>", { desc = "[G]it [B]rowse" })
 vim.keymap.set("n", "<leader>gB", open_github_commit_for_current_line, { desc = "[G]it browse causing commit" })
 vim.keymap.set("v", "<leader>gb", ":'<,'>GBrowse<CR>", { desc = "[G]it [B]rowse selection" })
+
+-- copy all file
+vim.keymap.set("n", "<leader>ya", "ggVGy", { desc = "Yank entire file" })
+vim.keymap.set("n", "<leader>ya", 'gg"+yG',          { desc = "Yank entire file" })
+vim.keymap.set("n", "<leader>da", "ggdG",             { desc = "Delete entire file contents" })
+vim.keymap.set("n", "<leader>sa", "ggVG",             { desc = "Select entire file" })
+
+-- paste over word without overwriting your register
+vim.keymap.set("n", "<leader>rw", '"_diwP', { desc = "Replace word with yanked" })
+vim.keymap.set("n", "<leader>dw", '"_diw',            { desc = "Delete word (no register)" })
+vim.keymap.set("n", "<leader>rl", '"_ddP',            { desc = "Replace line with yanked" })
+vim.keymap.set("n", "x",          '"_x',              { desc = "Delete char (no register)" })
+
+
+vim.keymap.set("n", "<C-d>", "<C-d>zz",              { desc = "Scroll down, keep centered" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz",              { desc = "Scroll up, keep centered" })
+
+
+vim.keymap.set("n", "<leader>nh", ":nohl<CR>",        { desc = "Clear search highlight" })
+vim.keymap.set("n", "<leader>w",  ":w<CR>",           { desc = "Save file" })
+vim.keymap.set("n", "<leader>q",  ":q<CR>",           { desc = "Quit" })
+vim.keymap.set("i", "jk",         "<Esc>",            { desc = "Exit insert mode" })
+vim.keymap.set("n", "<leader>+",  "<C-a>",            { desc = "Increment number" })
+vim.keymap.set("n", "<leader>-",  "<C-x>",            { desc = "Decrement number" })
