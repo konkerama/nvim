@@ -221,10 +221,7 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
 -- CUSTOM CONFIG:
--- Disable Neovim's built-in EditorConfig (runtime/plugin/editorconfig.lua).
--- It can override buffer-local EOF options like 'endofline'/'fixendofline'.
--- We keep the separate plugin `editorconfig/editorconfig-vim` enabled instead.
-vim.g.editorconfig = false
+vim.g.editorconfig = true
 
 -- Keep EditorConfig active, but do not force trailing newline at EOF.
 vim.g.EditorConfig_disable_rules = { "insert_final_newline" }
@@ -1460,7 +1457,6 @@ require("lazy").setup({
 		},
 	},
 	{ "nvim-tree/nvim-web-devicons", lazy = true },
-	{ "editorconfig/editorconfig-vim" },
 
 	--
 	-- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
