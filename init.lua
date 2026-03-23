@@ -226,26 +226,26 @@ vim.g.editorconfig = true
 -- Do not auto-normalize EOF newlines when writing files.
 vim.o.fixendofline = false
 
-local gofmt_on_save = vim.api.nvim_create_augroup("go-fmt-on-save", { clear = true })
-vim.api.nvim_create_autocmd("BufWritePre", {
-	group = gofmt_on_save,
-	pattern = "*.go",
-	callback = function()
-		if vim.fn.executable("gofmt") == 0 then
-			vim.notify("gofmt not found in PATH", vim.log.levels.WARN)
-			return
-		end
+-- local gofmt_on_save = vim.api.nvim_create_augroup("go-fmt-on-save", { clear = true })
+-- vim.api.nvim_create_autocmd("BufWritePre", {
+-- 	group = gofmt_on_save,
+-- 	pattern = "*.go",
+-- 	callback = function()
+-- 		if vim.fn.executable("gofmt") == 0 then
+-- 			vim.notify("gofmt not found in PATH", vim.log.levels.WARN)
+-- 			return
+-- 		end
 
-		local view = vim.fn.winsaveview()
-		local ok = pcall(vim.cmd, "keepjumps keeppatterns %!gofmt")
-		vim.bo.endofline = true
-		vim.bo.fixendofline = true
-		vim.fn.winrestview(view)
-		if not ok then
-			vim.notify("gofmt failed for current buffer", vim.log.levels.WARN)
-		end
-	end,
-})
+-- 		local view = vim.fn.winsaveview()
+-- 		local ok = pcall(vim.cmd, "keepjumps keeppatterns %!gofmt")
+-- 		vim.bo.endofline = true
+-- 		vim.bo.fixendofline = true
+-- 		vim.fn.winrestview(view)
+-- 		if not ok then
+-- 			vim.notify("gofmt failed for current buffer", vim.log.levels.WARN)
+-- 		end
+-- 	end,
+-- })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
