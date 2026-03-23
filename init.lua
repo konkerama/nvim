@@ -223,9 +223,6 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 -- CUSTOM CONFIG:
 vim.g.editorconfig = true
 
--- Keep EditorConfig active, but do not force trailing newline at EOF.
-vim.g.EditorConfig_disable_rules = { "insert_final_newline" }
-vim.g.EditorConfig_exclude_patterns = { ".*\\.md$", ".*\\.mdx$" }
 -- Do not auto-normalize EOF newlines when writing files.
 vim.o.fixendofline = false
 
@@ -777,7 +774,7 @@ require("lazy").setup({
 
 	{ -- Autoformat
 		"stevearc/conform.nvim",
-		event = { "BufWritePre" },
+		event = { "BufReadPre", "BufNewFile" },
 		cmd = { "ConformInfo" },
 		keys = {
 			{
@@ -802,14 +799,16 @@ require("lazy").setup({
 					return nil
 				else
 					return {
-						timeout_ms = 500,
+						timeout_ms = 4000,
 						lsp_format = "fallback",
 					}
 				end
 			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
-				go = { "gofumpt", "goimports" },
+				go = { "gofmt" },
+				gomod = { "gofmt" },
+				gowork = { "gofmt" },
 				terraform = { "terraform_fmt" },
 				["terraform-vars"] = { "terraform_fmt" },
 				hcl = { "terragrunt_hclfmt" },
