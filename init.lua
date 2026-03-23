@@ -1903,3 +1903,8 @@ vim.keymap.set("n", "<leader>q",  ":q<CR>",           { desc = "Quit" })
 vim.keymap.set("i", "jk",         "<Esc>",            { desc = "Exit insert mode" })
 vim.keymap.set("n", "<leader>+",  "<C-a>",            { desc = "Increment number" })
 vim.keymap.set("n", "<leader>-",  "<C-x>",            { desc = "Decrement number" })
+
+-- macOS-style copy: ensure Cmd+C/Meta+C always yanks (copy) without delete/change.
+-- Some terminals send Cmd as <M-...>; GUIs can send <D-...>.
+vim.keymap.set({ "n", "x" }, "<D-c>", '"+y', { desc = "Copy to system clipboard" })
+vim.keymap.set({ "n", "x" }, "<M-c>", '"+y', { desc = "Copy to system clipboard" })
