@@ -1894,6 +1894,15 @@ local function open_github_commit_for_current_line()
 	open_github_commit(commit, target_win)
 end
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "go", "gomod", "gowork", "gosum" },
+  callback = function()
+    vim.opt_local.tabstop = 4
+    vim.opt_local.shiftwidth = 4
+    vim.opt_local.expandtab = false -- Go uses real tabs, never spaces
+  end,
+})
+
 -- fold settings
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
