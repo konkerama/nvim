@@ -226,26 +226,21 @@ vim.g.editorconfig = true
 -- Do not auto-normalize EOF newlines when writing files.
 vim.o.fixendofline = false
 
--- local gofmt_on_save = vim.api.nvim_create_augroup("go-fmt-on-save", { clear = true })
--- vim.api.nvim_create_autocmd("BufWritePre", {
--- 	group = gofmt_on_save,
--- 	pattern = "*.go",
--- 	callback = function()
--- 		if vim.fn.executable("gofmt") == 0 then
--- 			vim.notify("gofmt not found in PATH", vim.log.levels.WARN)
--- 			return
--- 		end
-
--- 		local view = vim.fn.winsaveview()
--- 		local ok = pcall(vim.cmd, "keepjumps keeppatterns %!gofmt")
--- 		vim.bo.endofline = true
--- 		vim.bo.fixendofline = true
--- 		vim.fn.winrestview(view)
--- 		if not ok then
--- 			vim.notify("gofmt failed for current buffer", vim.log.levels.WARN)
--- 		end
--- 	end,
--- })
+local gofmt_on_save = vim.api.nvim_create_augroup("go-fmt-on-save", { clear = true })
+vim.api.nvim_create_autocmd("BufWritePre", {
+	group = gofmt_on_save,
+	pattern = "*.go",
+	callback = function(args)
+		require("conform").format({
+			bufnr = args.buf,
+			async = false,
+			lsp_format = "fallback",
+			formatters = { "gofmt" },
+		})
+		vim.bo[args.buf].endofline = true
+		vim.bo[args.buf].fixendofline = true
+	end,
+})
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -812,11 +807,6 @@ require("lazy").setup({
 		opts = {
 			notify_on_error = false,
 			format_on_save = function(bufnr)
-				local ft = vim.bo[bufnr].filetype
-				if ft == "go" then
-					return nil
-				end
-
 				-- Disable "format_on_save lsp_fallback" for languages that don't
 				-- have a well standardized coding style. You can add additional
 				-- languages here or re-enable it for the disabled ones.
@@ -1084,7 +1074,7 @@ require("lazy").setup({
 	--  Here are some example plugins that I've included in the Kickstart repository.
 	--  Uncomment any of the lines below to enable them (you will need to restart nvim).
 	--
-	require 'kickstart.plugins.debug',
+	require("kickstart.plugins.debug"),
 	require("kickstart.plugins.indent_line"),
 	-- require 'kickstart.plugins.lint',
 	-- require 'kickstart.plugins.autopairs',
@@ -1466,19 +1456,27 @@ require("lazy").setup({
 	-- { import = 'custom.plugins' },
 	--
 	{
-		"nvim-pack/nvim-spectre",
-		cmd = "Spectre",
+		"MagicDuck/grug-far.nvim",
+		opts = {},
 		keys = {
-			{
-				"<leader>S",
-				function()
-					require("spectre").open()
-				end,
-				desc = "Search/Replace in repo",
-			},
-		},
-		dependencies = {
-			"nvim-lua/plenary.nvim",
+			{ "<leader>sr", "<cmd>GrugFar<cr>", desc = "Search & Replace" },
+			{ "<leader>S", "<cmd>GrugFar<cr>", desc = "Search & Replace" },
+			-- open with current word pre-filled
+			-- {
+			-- 	"<leader>sw",
+			-- 	function()
+			-- 		require("grug-far").open({ prefills = { search = vim.fn.expand("<cword>") } })
+			-- 	end,
+			-- 	desc = "Search & Replace (cword)",
+			-- },
+			-- open scoped to current file
+			-- {
+			-- 	"<leader>sf",
+			-- 	function()
+			-- 		require("grug-far").open({ prefills = { paths = vim.fn.expand("%") } })
+			-- 	end,
+			-- 	desc = "Search & Replace (current file)",
+			-- },
 		},
 	},
 	{ "nvim-tree/nvim-web-devicons", lazy = true },
@@ -1916,29 +1914,33 @@ vim.keymap.set("v", "<leader>gb", ":'<,'>GBrowse<CR>", { desc = "[G]it [B]rowse 
 
 -- copy all file
 vim.keymap.set("n", "<leader>ya", "ggVGy", { desc = "Yank entire file" })
-vim.keymap.set("n", "<leader>ya", 'gg"+yG',          { desc = "Yank entire file" })
-vim.keymap.set("n", "<leader>da", "ggdG",             { desc = "Delete entire file contents" })
-vim.keymap.set("n", "<leader>sa", "ggVG",             { desc = "Select entire file" })
+vim.keymap.set("n", "<leader>ya", 'gg"+yG', { desc = "Yank entire file" })
+vim.keymap.set("n", "<leader>da", "ggdG", { desc = "Delete entire file contents" })
+vim.keymap.set("n", "<leader>sa", "ggVG", { desc = "Select entire file" })
 
 -- paste over word without overwriting your register
 vim.keymap.set("n", "<leader>rw", '"_diwP', { desc = "Replace word with yanked" })
-vim.keymap.set("n", "<leader>dw", '"_diw',            { desc = "Delete word (no register)" })
-vim.keymap.set("n", "<leader>rl", '"_ddP',            { desc = "Replace line with yanked" })
-vim.keymap.set("n", "x",          '"_x',              { desc = "Delete char (no register)" })
+vim.keymap.set("n", "<leader>dw", '"_diw', { desc = "Delete word (no register)" })
+vim.keymap.set("n", "<leader>rl", '"_ddP', { desc = "Replace line with yanked" })
+vim.keymap.set("n", "x", '"_x', { desc = "Delete char (no register)" })
 
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Scroll down, keep centered" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Scroll up, keep centered" })
 
-vim.keymap.set("n", "<C-d>", "<C-d>zz",              { desc = "Scroll down, keep centered" })
-vim.keymap.set("n", "<C-u>", "<C-u>zz",              { desc = "Scroll up, keep centered" })
-
-
-vim.keymap.set("n", "<leader>nh", ":nohl<CR>",        { desc = "Clear search highlight" })
-vim.keymap.set("n", "<leader>w",  ":w<CR>",           { desc = "Save file" })
-vim.keymap.set("n", "<leader>q",  ":q<CR>",           { desc = "Quit" })
-vim.keymap.set("i", "jk",         "<Esc>",            { desc = "Exit insert mode" })
-vim.keymap.set("n", "<leader>+",  "<C-a>",            { desc = "Increment number" })
-vim.keymap.set("n", "<leader>-",  "<C-x>",            { desc = "Decrement number" })
+vim.keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlight" })
+vim.keymap.set("n", "<leader>w", ":w<CR>", { desc = "Save file" })
+vim.keymap.set("n", "<leader>q", ":q<CR>", { desc = "Quit" })
+vim.keymap.set("i", "jk", "<Esc>", { desc = "Exit insert mode" })
+vim.keymap.set("n", "<leader>+", "<C-a>", { desc = "Increment number" })
+vim.keymap.set("n", "<leader>-", "<C-x>", { desc = "Decrement number" })
 
 -- macOS-style copy: ensure Cmd+C/Meta+C always yanks (copy) without delete/change.
 -- Some terminals send Cmd as <M-...>; GUIs can send <D-...>.
 vim.keymap.set({ "n", "x" }, "<D-c>", '"+y', { desc = "Copy to system clipboard" })
 vim.keymap.set({ "n", "x" }, "<M-c>", '"+y', { desc = "Copy to system clipboard" })
+
+-- disable accidental macro recording on q
+vim.keymap.set("n", "q", "<nop>")
+
+-- and use Q for macros instead (optional)
+vim.keymap.set("n", "Q", "q")
