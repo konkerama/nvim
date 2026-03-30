@@ -1233,6 +1233,10 @@ require("lazy").setup({
 		-- },
 	},
 	-- {
+	-- 	"nvim-lualine/lualine.nvim",
+	-- 	dependencies = { "nvim-tree/nvim-web-devicons" },
+	-- },
+	-- {
 	-- 	"mfussenegger/nvim-dap",
 	-- 	keys = {
 	-- 		{
@@ -1893,12 +1897,12 @@ local function open_github_commit_for_current_line()
 end
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "go", "gomod", "gowork", "gosum" },
-  callback = function()
-    vim.opt_local.tabstop = 4
-    vim.opt_local.shiftwidth = 4
-    vim.opt_local.expandtab = false -- Go uses real tabs, never spaces
-  end,
+	pattern = { "go", "gomod", "gowork", "gosum" },
+	callback = function()
+		vim.opt_local.tabstop = 4
+		vim.opt_local.shiftwidth = 4
+		vim.opt_local.expandtab = false -- Go uses real tabs, never spaces
+	end,
 })
 
 -- fold settings
@@ -1944,3 +1948,6 @@ vim.keymap.set("n", "q", "<nop>")
 
 -- and use Q for macros instead (optional)
 vim.keymap.set("n", "Q", "q")
+
+
+vim.lsp.set_log_level("ERROR")  -- only log errors, not warnings
