@@ -1796,7 +1796,7 @@ local function toggle_terminal_visibility()
 	vim.cmd("ToggleTerm")
 end
 
-vim.keymap.set({ "n", "t" }, "<leader>t", toggle_terminal_focus, { desc = "Toggle [T]erminal focus" })
+vim.keymap.set("n", "<leader>t", toggle_terminal_focus, { desc = "Toggle [T]erminal focus" })
 vim.keymap.set({ "n", "t" }, "<C-\\>", toggle_terminal_visibility, { desc = "Toggle terminal visibility" })
 
 -- git
