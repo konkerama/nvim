@@ -666,6 +666,57 @@ require("lazy").setup({
 				"has no type",
 			}
 
+			local function terraform_root_dir(target)
+				local path = nil
+
+				if type(target) == "number" then
+					path = vim.api.nvim_buf_get_name(target)
+				elseif type(target) == "string" then
+					path = target
+				end
+
+				if path and vim.startswith(path, "file://") then
+					path = vim.uri_to_fname(path)
+				end
+
+				if not path or path == "" then
+					path = vim.uv.cwd()
+				end
+
+				local stat = vim.uv.fs_stat(path)
+				local start = (stat and stat.type == "file") and vim.fs.dirname(path) or path
+				local dir = start
+
+				while dir do
+					-- Prefer the nearest Terraform/Terragrunt directory in monorepos.
+					if vim.fn.filereadable(dir .. "/terragrunt.hcl") == 1 then
+						return dir
+					end
+
+					local has_tf_file = #vim.fn.globpath(dir, "*.tf", false, true) > 0
+						or #vim.fn.globpath(dir, "*.tf.json", false, true) > 0
+						or #vim.fn.globpath(dir, "*.tfvars", false, true) > 0
+
+					if has_tf_file then
+						return dir
+					end
+
+					local parent = vim.fs.dirname(dir)
+					if parent == dir then
+						break
+					end
+
+					dir = parent
+				end
+
+				return start
+			end
+
+			local function terraform_on_attach(client, _)
+				-- Treesitter handles highlighting; disabling semantic tokens reduces terraform-ls churn.
+				client.server_capabilities.semanticTokensProvider = nil
+			end
+
 			local default_publish_diagnostics = vim.lsp.handlers["textDocument/publishDiagnostics"]
 			local function terraform_publish_diagnostics(err, result, ctx, config)
 				if result and result.diagnostics then
@@ -702,11 +753,14 @@ require("lazy").setup({
 
 				-- Terraform / Terragrunt
 				terraformls = {
+					root_dir = terraform_root_dir,
+					on_attach = terraform_on_attach,
 					handlers = {
 						["textDocument/publishDiagnostics"] = terraform_publish_diagnostics,
 					},
 				},
 				tflint = {
+					root_dir = terraform_root_dir,
 					handlers = {
 						["textDocument/publishDiagnostics"] = terraform_publish_diagnostics,
 					},
@@ -1199,7 +1253,7 @@ require("lazy").setup({
 		opts = {
 			-- NOTE: The log_level is in `opts.opts`
 			opts = {
-				log_level = "DEBUG", -- or "TRACE"
+				log_level = "INFO", -- or "TRACE"
 			},
 		},
 	},
