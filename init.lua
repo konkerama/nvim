@@ -2008,4 +2008,3 @@ vim.keymap.set("n", "q", "<nop>")
 vim.keymap.set("n", "Q", "q")
 
 
-vim.lsp.set_log_level("ERROR")  -- only log errors, not warnings
