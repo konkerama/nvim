@@ -479,6 +479,10 @@ require("lazy").setup({
 					-- This is where a variable was first declared, or where a function is defined, etc.
 					-- To jump back, press <C-t>.
 					vim.keymap.set("n", "grd", builtin.lsp_definitions, { buffer = buf, desc = "[G]oto [D]efinition" })
+					vim.keymap.set("n", "grv", function()
+						vim.cmd.vsplit()
+						builtin.lsp_definitions()
+					end, { buffer = buf, desc = "[G]oto [V]split [D]efinition" })
 
 					-- Fuzzy find all the symbols in your current document.
 					-- Symbols are things like variables, functions, types, etc.
@@ -614,6 +618,10 @@ require("lazy").setup({
 					-- WARN: This is not Goto Definition, this is Goto Declaration.
 					--  For example, in C this would take you to the header.
 					map("grD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
+					map("grV", function()
+						vim.cmd.vsplit()
+						vim.lsp.buf.declaration()
+					end, "[G]oto [V]split [D]eclaration")
 
 					-- The following two autocommands are used to highlight references of the
 					-- word under your cursor when your cursor rests there for a little while.
