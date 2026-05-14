@@ -1298,6 +1298,7 @@ require("lazy").setup({
 		-- 	{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" },
 		-- },
 	},
+	{ "sindrets/diffview.nvim" },
 	-- {
 	-- 	"nvim-lualine/lualine.nvim",
 	-- 	dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -2014,5 +2015,3 @@ vim.keymap.set("n", "q", "<nop>")
 
 -- and use Q for macros instead (optional)
 vim.keymap.set("n", "Q", "q")
-
-
