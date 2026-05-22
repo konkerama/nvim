@@ -2000,6 +2000,7 @@ vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Scroll up, keep centered" })
 
 vim.keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlight" })
 vim.keymap.set("n", "<leader>w", ":w<CR>", { desc = "Save file" })
+vim.keymap.set("n", "<leader>W", ":noa w<CR>", { desc = "Save without formatting" })
 vim.keymap.set("n", "<leader>q", ":q<CR>", { desc = "Quit" })
 vim.keymap.set("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 vim.keymap.set("n", "<leader>+", "<C-a>", { desc = "Increment number" })
