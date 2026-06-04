@@ -1225,10 +1225,33 @@ require("lazy").setup({
 		"zbirenbaum/copilot.lua",
 		cmd = "Copilot",
 		event = "InsertEnter",
+		config = function(_, opts)
+			require("copilot").setup(opts)
+
+			local blink_copilot_group = vim.api.nvim_create_augroup("kickstart-copilot-blink", { clear = true })
+
+			vim.api.nvim_create_autocmd("User", {
+				group = blink_copilot_group,
+				pattern = "BlinkCmpMenuOpen",
+				callback = function()
+					vim.b.copilot_suggestion_hidden = true
+				end,
+			})
+
+			vim.api.nvim_create_autocmd("User", {
+				group = blink_copilot_group,
+				pattern = "BlinkCmpMenuClose",
+				callback = function()
+					vim.b.copilot_suggestion_hidden = false
+				end,
+			})
+		end,
 		opts = {
 			suggestion = {
 				enabled = true,
 				auto_trigger = true,
+				hide_during_completion = true,
+				debounce = 75,
 				keymap = {
 					accept = "<C-y>",
 					accept_word = "<M-w>",
