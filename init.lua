@@ -1242,29 +1242,29 @@ require("lazy").setup({
 			panel = { enabled = true },
 		},
 	},
-	{
-		"olimorris/codecompanion.nvim",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			"nvim-treesitter/nvim-treesitter",
-		},
-		keys = function()
-			local chat_open = "<cmd>CodeCompanionChat<CR>"
-
-			return {
-				{ "<leader>cc", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Toggle" },
-				{ "<leader>cp", "<cmd>CodeCompanionActions<CR>", desc = "CodeCompanion: Prompts/Actions" },
-				{ "<leader>ce", chat_open, desc = "CodeCompanion: Open" },
-				{ "<leader>ce", chat_open, mode = "v", desc = "CodeCompanion: Open" },
-			}
-		end,
-		opts = {
-			-- NOTE: The log_level is in `opts.opts`
-			opts = {
-				log_level = "INFO", -- or "TRACE"
-			},
-		},
-	},
+	-- {
+	-- 	"olimorris/codecompanion.nvim",
+	-- 	dependencies = {
+	-- 		"nvim-lua/plenary.nvim",
+	-- 		"nvim-treesitter/nvim-treesitter",
+	-- 	},
+	-- 	keys = function()
+	-- 		local chat_open = "<cmd>CodeCompanionChat<CR>"
+	--
+	-- 		return {
+	-- 			{ "<leader>cc", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Toggle" },
+	-- 			{ "<leader>cp", "<cmd>CodeCompanionActions<CR>", desc = "CodeCompanion: Prompts/Actions" },
+	-- 			{ "<leader>ce", chat_open, desc = "CodeCompanion: Open" },
+	-- 			{ "<leader>ce", chat_open, mode = "v", desc = "CodeCompanion: Open" },
+	-- 		}
+	-- 	end,
+	-- 	opts = {
+	-- 		-- NOTE: The log_level is in `opts.opts`
+	-- 		opts = {
+	-- 			log_level = "INFO", -- or "TRACE"
+	-- 		},
+	-- 	},
+	-- },
 	{
 		"numToStr/Comment.nvim",
 		opts = {
