@@ -1,3 +1,8 @@
+-- CUSTOM: Full config override for nvim-treesitter. This replaces the kickstart base config (init.lua)
+-- because lazy.nvim's `config` cannot be additively merged. Sections marked CUSTOM below are
+-- the additions; everything else is identical to the kickstart base.
+--
+-- To revert to kickstart defaults, delete this file — init.lua's spec takes over automatically.
 ---@module 'lazy'
 ---@type LazySpec
 return {
@@ -7,6 +12,7 @@ return {
 	branch = "main",
 	-- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
 	config = function()
+		-- CUSTOM: use a dedicated install dir so parsers are co-located with the plugin source
 		local treesitter_parser_dir = vim.fn.stdpath("data") .. "/lazy/nvim-treesitter"
 
 		require("nvim-treesitter").setup({
@@ -14,6 +20,8 @@ return {
 		})
 		vim.opt.runtimepath:prepend(vim.fs.joinpath(treesitter_parser_dir, ""))
 
+		-- CUSTOM: extended parser list beyond the kickstart defaults
+		-- (kickstart base: bash c diff html lua luadoc markdown markdown_inline query vim vimdoc)
 		local parsers = {
 			"bash",
 			"c",

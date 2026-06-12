@@ -1,3 +1,8 @@
+-- CUSTOM: Full config override for nvim-lspconfig. This replaces the kickstart base config (init.lua)
+-- because lazy.nvim's `config` cannot be additively merged. Sections marked CUSTOM below are
+-- the additions; everything else is identical to the kickstart base.
+--
+-- To revert to kickstart defaults, delete this file — init.lua's spec takes over automatically.
 -- LSP Plugins
 ---@module 'lazy'
 ---@type LazySpec
@@ -79,6 +84,7 @@ return {
 				-- WARN: This is not Goto Definition, this is Goto Declaration.
 				--  For example, in C this would take you to the header.
 				map("grD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
+				-- CUSTOM: open declaration in a vertical split
 				map("grV", function()
 					vim.cmd.vsplit()
 					vim.lsp.buf.declaration()
@@ -128,6 +134,9 @@ return {
 		-- Enable the following language servers
 		--  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
 		--  See `:help lsp-config` for information about keys and how to configure
+		-- CUSTOM: All servers below (gopls, terraformls, tflint, yamlls) are additions on top of the
+		-- kickstart base (stylua, lua_ls). The terraform/yaml helpers below are also custom.
+		-- CUSTOM: terraform/tflint warning filters (suppress noisy diagnostics)
 		local terraform_warning_filters = {
 			"declared but not used",
 			"variable has no type",

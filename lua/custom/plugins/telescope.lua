@@ -1,3 +1,8 @@
+-- CUSTOM: Full config override for telescope. This replaces the kickstart base config (init.lua)
+-- because lazy.nvim's `config` cannot be additively merged. Sections marked CUSTOM below are
+-- the additions; everything else is identical to the kickstart base.
+--
+-- To revert to kickstart defaults, delete this file — init.lua's spec takes over automatically.
 ---@module 'lazy'
 ---@type LazySpec
 return {
@@ -48,14 +53,20 @@ return {
 
 		-- See `:help telescope.builtin`
 		local builtin = require("telescope.builtin")
+
+		-- CUSTOM: search_dirs includes .github so hidden workflow files are found without
+		-- exposing all hidden directories (like .git).
 		local search_with_github_dirs = { ".", ".github" }
+
 		vim.keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "[S]earch [H]elp" })
 		vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
+		-- CUSTOM: scoped to search_with_github_dirs instead of cwd only
 		vim.keymap.set("n", "<leader>sf", function()
 			builtin.find_files({ search_dirs = search_with_github_dirs })
 		end, { desc = "[S]earch [F]iles" })
 		vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
 		vim.keymap.set({ "n", "v" }, "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
+		-- CUSTOM: scoped to search_with_github_dirs instead of cwd only
 		vim.keymap.set("n", "<leader>sg", function()
 			builtin.live_grep({ search_dirs = search_with_github_dirs })
 		end, { desc = "[S]earch by [G]rep" })
@@ -88,6 +99,7 @@ return {
 				-- This is where a variable was first declared, or where a function is defined, etc.
 				-- To jump back, press <C-t>.
 				vim.keymap.set("n", "grd", builtin.lsp_definitions, { buffer = buf, desc = "[G]oto [D]efinition" })
+				-- CUSTOM: open definition in a vertical split
 				vim.keymap.set("n", "grv", function()
 					vim.cmd.vsplit()
 					builtin.lsp_definitions()

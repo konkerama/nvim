@@ -1,24 +1,13 @@
+-- CUSTOM: Adds extra key group labels on top of the kickstart base spec.
+-- lazy.nvim deep-merges opts, so these are appended to the groups defined in init.lua.
 ---@module 'lazy'
 ---@type LazySpec
 return {
 	"folke/which-key.nvim",
-	event = "VimEnter",
-	---@module 'which-key'
-	---@type wk.Opts
-	---@diagnostic disable-next-line: missing-fields
 	opts = {
-		-- delay between pressing a key and opening which-key (milliseconds)
-		delay = 0,
-		icons = { mappings = vim.g.have_nerd_font },
-
-		-- Document existing key chains
 		spec = {
-			{ "<leader>s", group = "[S]earch", mode = { "n", "v" } },
 			{ "<leader>d", group = "[D]ebug" },
 			{ "<leader>R", group = "[R]un tests" },
-			{ "<leader>t", group = "[T]oggle" },
-			{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
-			{ "gr", group = "LSP Actions", mode = { "n" } },
 		},
 	},
 }
