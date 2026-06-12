@@ -438,7 +438,12 @@ require("lazy").setup({
 
 					-- Jump to the implementation of the word under your cursor.
 					-- Useful when your language has ways of declaring types without an actual implementation.
-					vim.keymap.set("n", "gri", builtin.lsp_implementations, { buffer = buf, desc = "[G]oto [I]mplementation" })
+					vim.keymap.set(
+						"n",
+						"gri",
+						builtin.lsp_implementations,
+						{ buffer = buf, desc = "[G]oto [I]mplementation" }
+					)
 
 					-- Jump to the definition of the word under your cursor.
 					-- This is where a variable was first declared, or where a function is defined, etc.
@@ -447,16 +452,31 @@ require("lazy").setup({
 
 					-- Fuzzy find all the symbols in your current document.
 					-- Symbols are things like variables, functions, types, etc.
-					vim.keymap.set("n", "gO", builtin.lsp_document_symbols, { buffer = buf, desc = "Open Document Symbols" })
+					vim.keymap.set(
+						"n",
+						"gO",
+						builtin.lsp_document_symbols,
+						{ buffer = buf, desc = "Open Document Symbols" }
+					)
 
 					-- Fuzzy find all the symbols in your current workspace.
 					-- Similar to document symbols, except searches over your entire project.
-					vim.keymap.set("n", "gW", builtin.lsp_dynamic_workspace_symbols, { buffer = buf, desc = "Open Workspace Symbols" })
+					vim.keymap.set(
+						"n",
+						"gW",
+						builtin.lsp_dynamic_workspace_symbols,
+						{ buffer = buf, desc = "Open Workspace Symbols" }
+					)
 
 					-- Jump to the type of the word under your cursor.
 					-- Useful when you're not sure what type a variable is and you want to see
 					-- the definition of its *type*, not where it was *defined*.
-					vim.keymap.set("n", "grt", builtin.lsp_type_definitions, { buffer = buf, desc = "[G]oto [T]ype Definition" })
+					vim.keymap.set(
+						"n",
+						"grt",
+						builtin.lsp_type_definitions,
+						{ buffer = buf, desc = "[G]oto [T]ype Definition" }
+					)
 				end,
 			})
 
@@ -569,7 +589,8 @@ require("lazy").setup({
 					-- When you move your cursor, the highlights will be cleared (the second autocommand).
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
 					if client and client:supports_method("textDocument/documentHighlight", event.buf) then
-						local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
+						local highlight_augroup =
+							vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 						vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 							buffer = event.buf,
 							group = highlight_augroup,
@@ -723,7 +744,7 @@ require("lazy").setup({
 	{ -- Autocompletion
 		"saghen/blink.cmp",
 		event = "VimEnter",
-		version = "1.*",
+		version = "*",
 		dependencies = {
 			-- Snippet Engine
 			{
@@ -893,7 +914,19 @@ require("lazy").setup({
 		branch = "main",
 		-- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
 		config = function()
-			local parsers = { "bash", "c", "diff", "html", "lua", "luadoc", "markdown", "markdown_inline", "query", "vim", "vimdoc" }
+			local parsers = {
+				"bash",
+				"c",
+				"diff",
+				"html",
+				"lua",
+				"luadoc",
+				"markdown",
+				"markdown_inline",
+				"query",
+				"vim",
+				"vimdoc",
+			}
 			require("nvim-treesitter").install(parsers)
 			vim.api.nvim_create_autocmd("FileType", {
 				callback = function(args)
