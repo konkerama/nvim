@@ -15,6 +15,19 @@ return {
 		-- CUSTOM: use a dedicated install dir so parsers are co-located with the plugin source
 		local treesitter_parser_dir = vim.fn.stdpath("data") .. "/lazy/nvim-treesitter"
 
+		-- Restart treesitter highlighting from scratch for a buffer.
+		-- Mirrors what close+reopen does: stops the current parser and starts a fresh one.
+		-- Used to recover from incremental-parse desync (mid-edit or after formatter rewrites buffer).
+		local function reset_ts_highlight(buf)
+			local ft = vim.bo[buf].filetype
+			local lang = vim.treesitter.language.get_lang(ft)
+			if not lang then
+				return
+			end
+			pcall(vim.treesitter.stop, buf)
+			pcall(vim.treesitter.start, buf, lang)
+		end
+
 		require("nvim-treesitter").setup({
 			install_dir = treesitter_parser_dir,
 		})
@@ -43,6 +56,21 @@ return {
 			"yaml",
 		}
 		require("nvim-treesitter").install(parsers)
+		-- After save: conform may rewrite the entire buffer (terraform_fmt, terragrunt_hclfmt, etc.).
+		-- Force a full parser reset so highlights reflect the reformatted content.
+		vim.api.nvim_create_autocmd("BufWritePost", {
+			pattern = { "*.tf", "*.tfvars", "*.hcl", "*.yml", "*.yaml" },
+			callback = function(args)
+				reset_ts_highlight(args.buf)
+			end,
+		})
+
+		-- Manual escape hatch: reset treesitter highlighting on the current buffer.
+		-- Useful when the incremental parser desyncs mid-edit (before saving).
+		vim.keymap.set("n", "<leader>th", function()
+			reset_ts_highlight(vim.api.nvim_get_current_buf())
+		end, { desc = "Reset treesitter highlight" })
+
 		vim.api.nvim_create_autocmd("FileType", {
 			callback = function(args)
 				local buf, filetype = args.buf, args.match
