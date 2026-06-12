@@ -1,0 +1,184 @@
+-- Disabled / commented-out plugins preserved for reference.
+-- Uncomment any spec to re-enable.
+
+---@module 'lazy'
+---@type LazySpec
+return {
+	-- {
+	-- 	"olimorris/codecompanion.nvim",
+	-- 	dependencies = {
+	-- 		"nvim-lua/plenary.nvim",
+	-- 		"nvim-treesitter/nvim-treesitter",
+	-- 	},
+	-- 	keys = function()
+	-- 		local chat_open = "<cmd>CodeCompanionChat<CR>"
+	--
+	-- 		return {
+	-- 			{ "<leader>cc", "<cmd>CodeCompanionChat Toggle<CR>", desc = "CodeCompanion: Toggle" },
+	-- 			{ "<leader>cp", "<cmd>CodeCompanionActions<CR>", desc = "CodeCompanion: Prompts/Actions" },
+	-- 			{ "<leader>ce", chat_open, desc = "CodeCompanion: Open" },
+	-- 			{ "<leader>ce", chat_open, mode = "v", desc = "CodeCompanion: Open" },
+	-- 		}
+	-- 	end,
+	-- 	opts = {
+	-- 		-- NOTE: The log_level is in `opts.opts`
+	-- 		opts = {
+	-- 			log_level = "INFO", -- or "TRACE"
+	-- 		},
+	-- 	},
+	-- },
+
+	-- {
+	-- 	"neoclide/coc.nvim",
+	-- 	branch = "release",
+	-- },
+
+	-- {
+	-- 	"NeogitOrg/neogit",
+	-- 	lazy = true,
+	-- 	dependencies = {
+	-- 		"nvim-lua/plenary.nvim", -- required
+	--
+	-- 		-- Only one of these is needed.
+	-- 		"sindrets/diffview.nvim", -- optional
+	-- 		"esmuellert/codediff.nvim", -- optional
+	--
+	-- 		-- Only one of these is needed.
+	-- 		"nvim-telescope/telescope.nvim", -- optional
+	-- 		"ibhagwan/fzf-lua", -- optional
+	-- 		"nvim-mini/mini.pick", -- optional
+	-- 		"folke/snacks.nvim", -- optional
+	-- 	},
+	-- 	cmd = "Neogit",
+	-- 	-- keys = {
+	-- 	-- 	{ "<leader>gg", "<cmd>Neogit<cr>", desc = "Show Neogit UI" },
+	-- 	-- },
+	-- },
+
+	-- {
+	-- 	"nvim-lualine/lualine.nvim",
+	-- 	dependencies = { "nvim-tree/nvim-web-devicons" },
+	-- },
+
+	-- {
+	-- 	"mfussenegger/nvim-dap",
+	-- 	keys = {
+	-- 		{
+	-- 			"<leader>dc",
+	-- 			function()
+	-- 				require("dap").continue()
+	-- 			end,
+	-- 			desc = "[D]ebug: [C]ontinue",
+	-- 		},
+	-- 		{
+	-- 			"<leader>db",
+	-- 			function()
+	-- 				require("dap").toggle_breakpoint()
+	-- 			end,
+	-- 			desc = "[D]ebug: Toggle [B]reakpoint",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dB",
+	-- 			function()
+	-- 				require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
+	-- 			end,
+	-- 			desc = "[D]ebug: Conditional [B]reakpoint",
+	-- 		},
+	-- 		{
+	-- 			"<leader>di",
+	-- 			function()
+	-- 				require("dap").step_into()
+	-- 			end,
+	-- 			desc = "[D]ebug: Step [I]nto",
+	-- 		},
+	-- 		{
+	-- 			"<leader>do",
+	-- 			function()
+	-- 				require("dap").step_over()
+	-- 			end,
+	-- 			desc = "[D]ebug: Step [O]ver",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dO",
+	-- 			function()
+	-- 				require("dap").step_out()
+	-- 			end,
+	-- 			desc = "[D]ebug: Step [O]ut",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dr",
+	-- 			function()
+	-- 				require("dap").repl.open()
+	-- 			end,
+	-- 			desc = "[D]ebug: Open [R]EPL",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dl",
+	-- 			function()
+	-- 				require("dap").run_last()
+	-- 			end,
+	-- 			desc = "[D]ebug: Run [L]ast",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dx",
+	-- 			function()
+	-- 				require("dap").terminate()
+	-- 			end,
+	-- 			desc = "[D]ebug: Terminate",
+	-- 		},
+	-- 	},
+	-- },
+
+	-- {
+	-- 	"leoluz/nvim-dap-go",
+	-- 	ft = { "go" },
+	-- 	dependencies = {
+	-- 		"mfussenegger/nvim-dap",
+	-- 	},
+	-- 	build = function()
+	-- 		vim.system({ "go", "install", "github.com/go-delve/delve/cmd/dlv@latest" }):wait()
+	-- 	end,
+	-- 	opts = function()
+	-- 		local delve_path = vim.fn.exepath("dlv")
+	-- 		if delve_path == "" then
+	-- 			local gopath = vim.trim(vim.fn.system("go env GOPATH"))
+	-- 			delve_path = gopath .. "/bin/dlv"
+	-- 		end
+
+	-- 		return {
+	-- 			delve = {
+	-- 				path = delve_path,
+	-- 			},
+	-- 		}
+	-- 	end,
+	-- 	keys = {
+	-- 		{
+	-- 			"<leader>dt",
+	-- 			function()
+	-- 				require("dap-go").debug_test()
+	-- 			end,
+	-- 			desc = "[D]ebug nearest [T]est",
+	-- 		},
+	-- 		{
+	-- 			"<leader>dT",
+	-- 			function()
+	-- 				require("dap-go").debug_last_test()
+	-- 			end,
+	-- 			desc = "[D]ebug last [T]est",
+	-- 		},
+	-- 	},
+	-- },
+
+	-- {
+	-- 	"rmagatti/auto-session",
+	-- 	lazy = false,
+
+	-- 	---enables autocomplete for opts
+	-- 	---@module "auto-session"
+	-- 	---@type AutoSession.Config
+	-- 	opts = {
+	-- 		suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+	-- 		-- log_level = 'debug',
+	-- 	},
+	-- },
+}
