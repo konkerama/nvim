@@ -233,55 +233,6 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 
 vim.keymap.set("n", "<leader>n", "<cmd>tabnew<CR>", { desc = "New tab" })
 
--- terminal
-local function find_terminal_window()
-	for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-		local buf = vim.api.nvim_win_get_buf(win)
-		local cfg = vim.api.nvim_win_get_config(win)
-		if vim.bo[buf].buftype == "terminal" and cfg.relative == "" then
-			return win
-		end
-	end
-
-	return nil
-end
-
-local function ensure_normal_mode()
-	if vim.api.nvim_get_mode().mode:sub(1, 1) == "t" then
-		vim.cmd("stopinsert")
-	end
-end
-
-local function toggle_terminal_focus()
-	ensure_normal_mode()
-
-	if vim.bo.buftype == "terminal" then
-		vim.cmd("wincmd p")
-		return
-	end
-
-	local term_win = find_terminal_window()
-	if term_win then
-		vim.api.nvim_set_current_win(term_win)
-		return
-	end
-
-	vim.cmd("ToggleTerm")
-end
-
-local function toggle_terminal_visibility()
-	ensure_normal_mode()
-
-	if vim.bo.buftype == "terminal" then
-		vim.cmd("wincmd p")
-	end
-
-	vim.cmd("ToggleTerm")
-end
-
-vim.keymap.set("n", "<leader>t", toggle_terminal_focus, { desc = "Toggle [T]erminal focus" })
-vim.keymap.set({ "n", "t" }, "<C-\\>", toggle_terminal_visibility, { desc = "Toggle terminal visibility" })
-
 -- git
 local function find_git_backed_window()
 	for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do

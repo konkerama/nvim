@@ -67,9 +67,11 @@ return {
 
 		-- Manual escape hatch: reset treesitter highlighting on the current buffer.
 		-- Useful when the incremental parser desyncs mid-edit (before saving).
-		vim.keymap.set("n", "<leader>th", function()
+		-- NOTE: uses <leader>tH (capital H); <leader>th is the buffer-local LSP inlay-hints
+		-- toggle, which would otherwise shadow this map on any LSP-attached buffer.
+		vim.keymap.set("n", "<leader>tH", function()
 			reset_ts_highlight(vim.api.nvim_get_current_buf())
-		end, { desc = "Reset treesitter highlight" })
+		end, { desc = "Reset [T]reesitter [H]ighlight" })
 
 		vim.api.nvim_create_autocmd("FileType", {
 			callback = function(args)
