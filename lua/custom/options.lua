@@ -6,17 +6,14 @@ vim.g.editorconfig = true
 -- Do not auto-normalize EOF newlines when writing files.
 vim.o.fixendofline = false
 
-local gofmt_on_save = vim.api.nvim_create_augroup("go-fmt-on-save", { clear = true })
+-- gofmt itself runs via conform's format_on_save (formatters_by_ft.go).
+-- This autocmd only fixes the trailing-newline behavior for Go: fixendofline is
+-- globally false (above), but Go files must keep gofmt's final newline.
+local go_eof_fix = vim.api.nvim_create_augroup("go-eof-fix", { clear = true })
 vim.api.nvim_create_autocmd("BufWritePre", {
-	group = gofmt_on_save,
+	group = go_eof_fix,
 	pattern = "*.go",
 	callback = function(args)
-		require("conform").format({
-			bufnr = args.buf,
-			async = false,
-			lsp_format = "fallback",
-			formatters = { "gofmt" },
-		})
 		vim.bo[args.buf].endofline = true
 		vim.bo[args.buf].fixendofline = true
 	end,

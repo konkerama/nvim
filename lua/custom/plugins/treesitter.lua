@@ -1,8 +1,6 @@
--- CUSTOM: Full config override for nvim-treesitter. This replaces the kickstart base config (init.lua)
--- because lazy.nvim's `config` cannot be additively merged. Sections marked CUSTOM below are
--- the additions; everything else is identical to the kickstart base.
---
--- To revert to kickstart defaults, delete this file — init.lua's spec takes over automatically.
+-- CUSTOM: Authoritative nvim-treesitter config and spec. Lives here (not init.lua) so all of
+-- treesitter's setup is in one place. Sections marked CUSTOM are additions on top of the
+-- upstream kickstart defaults that the rest mirrors.
 ---@module 'lazy'
 ---@type LazySpec
 return {
