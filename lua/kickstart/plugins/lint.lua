@@ -9,6 +9,7 @@ return {
       local lint = require 'lint'
       lint.linters_by_ft = {
         markdown = { 'markdownlint' },
+        go = { 'golangcilint' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
@@ -45,14 +46,27 @@ return {
 
       -- Create autocommand which carries out the actual linting
       -- on the specified events.
+      -- NOTE (custom): trigger only on read/save, NOT on InsertLeave/BufEnter.
+      -- golangci-lint runs over the whole package and is too slow to run on every
+      -- insert-leave or buffer switch.
       local lint_augroup = vim.api.nvim_create_augroup('lint', { clear = true })
-      vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'InsertLeave' }, {
+      vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufWritePost' }, {
         group = lint_augroup,
         callback = function()
           -- Only run the linter in buffers that you can modify in order to
           -- avoid superfluous noise, notably within the handy LSP pop-ups that
           -- describe the hovered symbol using Markdown.
           if vim.bo.modifiable then lint.try_lint() end
+        end,
+      })
+
+      -- actionlint only understands GitHub Actions workflow files, so scope it to
+      -- .github/workflows/*.{yml,yaml} instead of linting all YAML.
+      vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufWritePost' }, {
+        group = lint_augroup,
+        pattern = { '*/.github/workflows/*.yml', '*/.github/workflows/*.yaml' },
+        callback = function()
+          if vim.bo.modifiable then lint.try_lint 'actionlint' end
         end,
       })
     end,

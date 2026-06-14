@@ -8,6 +8,11 @@ return {
 	lazy = false,
 	build = ":TSUpdate",
 	branch = "main",
+	dependencies = {
+		-- CUSTOM: function/class/parameter textobjects + navigation. Uses the `main`
+		-- branch to match nvim-treesitter's `main` branch API.
+		{ "nvim-treesitter/nvim-treesitter-textobjects", branch = "main" },
+	},
 	-- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
 	config = function()
 		-- CUSTOM: use a dedicated install dir so parsers are co-located with the plugin source
@@ -96,5 +101,43 @@ return {
 				vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 			end,
 		})
+
+		-- CUSTOM: treesitter textobjects (select + move).
+		require("nvim-treesitter-textobjects").setup({
+			select = { lookahead = true },
+			move = { set_jumps = true },
+		})
+
+		local select = require("nvim-treesitter-textobjects.select")
+		local move = require("nvim-treesitter-textobjects.move")
+
+		-- Select textobjects, e.g. `vaf`, `dif`, `cia`.
+		local select_maps = {
+			af = "@function.outer",
+			["if"] = "@function.inner",
+			ac = "@class.outer",
+			ic = "@class.inner",
+			aa = "@parameter.outer",
+			ia = "@parameter.inner",
+		}
+		for lhs, query in pairs(select_maps) do
+			vim.keymap.set({ "x", "o" }, lhs, function()
+				select.select_textobject(query, "textobjects")
+			end, { desc = "Select " .. query })
+		end
+
+		-- Move between functions/classes. `set_jumps` records to the jumplist.
+		vim.keymap.set({ "n", "x", "o" }, "]m", function()
+			move.goto_next_start("@function.outer", "textobjects")
+		end, { desc = "Next function start" })
+		vim.keymap.set({ "n", "x", "o" }, "[m", function()
+			move.goto_previous_start("@function.outer", "textobjects")
+		end, { desc = "Previous function start" })
+		vim.keymap.set({ "n", "x", "o" }, "]]", function()
+			move.goto_next_start("@class.outer", "textobjects")
+		end, { desc = "Next class start" })
+		vim.keymap.set({ "n", "x", "o" }, "[[", function()
+			move.goto_previous_start("@class.outer", "textobjects")
+		end, { desc = "Previous class start" })
 	end,
 }
