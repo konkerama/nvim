@@ -56,7 +56,20 @@ return {
           -- Only run the linter in buffers that you can modify in order to
           -- avoid superfluous noise, notably within the handy LSP pop-ups that
           -- describe the hovered symbol using Markdown.
-          if vim.bo.modifiable then lint.try_lint() end
+          if not vim.bo.modifiable then return end
+          -- nvim-lint's golangcilint builtin resolves its args ONCE at plugin load
+          -- via getArgs() (shells out to `golangci-lint version` + `go env GOMOD`).
+          -- On machines where golangci-lint isn't on $PATH yet at load time (mac:
+          -- mason bin not prepended before BufReadPre fires), getArgs() returns nil,
+          -- args = nil, --issues-exit-code=0 is never sent, and golangci-lint exits
+          -- with the issue count (e.g. 3) → "exited with code 3". Re-require the
+          -- builtin at lint time (when PATH is ready) so getArgs() re-runs correctly.
+          -- Version-agnostic: the builtin handles v1/v2 internally.
+          if vim.bo.filetype == 'go' then
+            package.loaded['lint.linters.golangcilint'] = nil
+            lint.linters.golangcilint = require 'lint.linters.golangcilint'
+          end
+          lint.try_lint()
         end,
       })
 
