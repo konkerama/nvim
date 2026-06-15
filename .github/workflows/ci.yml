@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main, feat/restructure]
+  pull_request:
+
+jobs:
+  static:
+    name: stylua + luacheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: stylua --check
+        uses: JohnnyMorganz/stylua-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
+          args: --check init.lua lua/custom
+
+      - name: luacheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq luarocks
+          sudo luarocks install luacheck
+          luacheck init.lua lua/custom
