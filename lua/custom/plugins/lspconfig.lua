@@ -79,6 +79,16 @@ return {
 				-- or a suggestion from your LSP for this to activate.
 				map("gra", vim.lsp.buf.code_action, "[G]oto Code [A]ction", { "n", "x" })
 
+				-- CUSTOM: Goto Definition. Most servers (gopls, terraform-ls, lua_ls) implement
+				-- textDocument/definition; gate behind capability check so the map only
+				-- appears on supporting buffers. Note: `grt` (Neovim 0.11 default) maps to
+				-- type_definition, which HCL servers don't implement — use grd on .tf files
+				-- to jump from var.x to the matching variable "x" block instead.
+				local client = vim.lsp.get_client_by_id(event.data.client_id)
+				if client and client:supports_method("textDocument/definition", event.buf) then
+					map("grd", vim.lsp.buf.definition, "[G]oto [D]efinition")
+				end
+
 				-- WARN: This is not Goto Definition, this is Goto Declaration.
 				--  For example, in C this would take you to the header.
 				map("grD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
@@ -93,7 +103,6 @@ return {
 				--    See `:help CursorHold` for information about when this is executed
 				--
 				-- When you move your cursor, the highlights will be cleared (the second autocommand).
-				local client = vim.lsp.get_client_by_id(event.data.client_id)
 				if client and client:supports_method("textDocument/documentHighlight", event.buf) then
 					local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -141,18 +150,13 @@ return {
 			"has no type",
 		}
 
-		local function terraform_root_dir(target)
-			local path = nil
-
-			if type(target) == "number" then
-				path = vim.api.nvim_buf_get_name(target)
-			elseif type(target) == "string" then
-				path = target
-			end
-
-			if path and vim.startswith(path, "file://") then
-				path = vim.uri_to_fname(path)
-			end
+		-- NOTE: Neovim 0.11's native vim.lsp.config calls root_dir as
+		-- `function(bufnr, on_dir)` and requires `on_dir(path)` to be called;
+		-- a returned value is silently ignored and the server never starts.
+		-- (This previously `return`ed the dir old-lspconfig style, so
+		-- terraform-ls/tflint never attached at all on this config.)
+		local function terraform_root_dir(bufnr, on_dir)
+			local path = vim.api.nvim_buf_get_name(bufnr)
 
 			if not path or path == "" then
 				path = vim.uv.cwd()
@@ -165,7 +169,7 @@ return {
 			while dir do
 				-- Prefer the nearest Terraform/Terragrunt directory in monorepos.
 				if vim.fn.filereadable(dir .. "/terragrunt.hcl") == 1 then
-					return dir
+					return on_dir(dir)
 				end
 
 				local has_tf_file = #vim.fn.globpath(dir, "*.tf", false, true) > 0
@@ -173,7 +177,7 @@ return {
 					or #vim.fn.globpath(dir, "*.tfvars", false, true) > 0
 
 				if has_tf_file then
-					return dir
+					return on_dir(dir)
 				end
 
 				local parent = vim.fs.dirname(dir)
@@ -184,7 +188,7 @@ return {
 				dir = parent
 			end
 
-			return start
+			return on_dir(start)
 		end
 
 		local function terraform_on_attach(client, _)

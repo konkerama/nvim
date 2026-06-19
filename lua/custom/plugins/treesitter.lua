@@ -31,6 +31,13 @@ return {
 			pcall(vim.treesitter.start, buf, lang)
 		end
 
+		-- CUSTOM: treat *.hcl as a distinct `terragrunt` filetype so it's visually
+		-- distinct from plain HCL. Parser stays hcl (same highlight rules); conform's
+		-- `terragrunt` formatter and autosave_skip_ft entry already reference this ft.
+		-- Must run before treesitter setup so the FileType autocmd below sees the ft.
+		vim.filetype.add({ pattern = { [".*%.hcl"] = "terragrunt" } })
+		vim.treesitter.language.register("hcl", "terragrunt")
+
 		require("nvim-treesitter").setup({
 			install_dir = treesitter_parser_dir,
 		})

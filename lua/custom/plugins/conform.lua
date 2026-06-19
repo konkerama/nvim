@@ -22,10 +22,20 @@ return {
 			go = { "gofmt" },
 			gomod = { "gofmt" },
 			gowork = { "gofmt" },
-			terraform = { "terraform_fmt" },
-			["terraform-vars"] = { "terraform_fmt" },
+			-- CUSTOM: user runs OpenTofu, not terraform.
+			terraform = { "tofu_fmt" },
+			["terraform-vars"] = { "tofu_fmt" },
 			hcl = { "terragrunt_hclfmt" },
 			terragrunt = { "terragrunt_hclfmt" },
+		},
+		formatters = {
+			-- CUSTOM: snap-confined tofu's `fmt -` (stdin, conform's default) exits 2 and
+			-- writes nothing. File mode works, so force it.
+			tofu_fmt = {
+				command = "tofu",
+				args = { "fmt", "$FILENAME" },
+				stdin = false,
+			},
 		},
 	},
 }
