@@ -8,6 +8,8 @@ return {
 		spec = {
 			{ "<leader>d", group = "[D]ebug" },
 			{ "<leader>R", group = "[R]un tests" },
+			{ "<leader>x", group = "Trouble" },
+			{ "gs", group = "[S]urround" },
 		},
 	},
 }

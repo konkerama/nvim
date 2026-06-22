@@ -4,7 +4,7 @@ return {
 	"MagicDuck/grug-far.nvim",
 	opts = {},
 	keys = {
-		{ "<leader>sr", "<cmd>GrugFar<cr>", desc = "Search & Replace" },
+		{ "<leader>sR", "<cmd>GrugFar<cr>", desc = "Search & Replace" },
 		{ "<leader>S", "<cmd>GrugFar<cr>", desc = "Search & Replace" },
 		-- open with current word pre-filled
 		-- {

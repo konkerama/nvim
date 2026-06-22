@@ -1,7 +1,7 @@
 -- Custom keymaps, functions, and autocmds
 
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
+-- vim: ts=4 sts=4 sw=4 noet
 
 -- Custom keybindings:
 local function is_neotree_ft(ft)
@@ -226,9 +226,16 @@ vim.api.nvim_create_autocmd({ "WinClosed", "BufEnter", "TabEnter" }, {
 	end,
 })
 
+-- Autosave on leaving insert mode, except for filetypes whose formatters are slow
+-- (terraform/terragrunt/hcl run on save and can block the UI up to conform's timeout).
+local autosave_skip_ft = { terraform = true, terragrunt = true, hcl = true }
 vim.api.nvim_create_autocmd("InsertLeave", {
 	pattern = "*",
-	command = "silent! write",
+	callback = function()
+		if not autosave_skip_ft[vim.bo.filetype] then
+			vim.cmd("silent! write")
+		end
+	end,
 })
 
 vim.keymap.set("n", "<leader>n", "<cmd>tabnew<CR>", { desc = "New tab" })
@@ -355,7 +362,6 @@ vim.keymap.set("n", "<leader>gB", open_github_commit_for_current_line, { desc = 
 vim.keymap.set("v", "<leader>gb", ":'<,'>GBrowse<CR>", { desc = "[G]it [B]rowse selection" })
 
 -- copy all file
-vim.keymap.set("n", "<leader>ya", "ggVGy", { desc = "Yank entire file" })
 vim.keymap.set("n", "<leader>ya", 'gg"+yG', { desc = "Yank entire file" })
 vim.keymap.set("n", "<leader>da", "ggdG", { desc = "Delete entire file contents" })
 vim.keymap.set("n", "<leader>sa", "ggVG", { desc = "Select entire file" })

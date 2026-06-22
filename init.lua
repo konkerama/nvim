@@ -91,7 +91,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -189,7 +189,7 @@ vim.diagnostic.config({
 	jump = { float = true },
 })
 
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
+vim.keymap.set("n", "<leader>Q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -439,7 +439,12 @@ require("lazy").setup({
 			},
 
 			sources = {
-				default = { "lsp", "path", "snippets" },
+				default = { "lsp", "path", "snippets", "lazydev" },
+				providers = {
+					-- lazydev completions for the Neovim Lua API; group_index 0 so they
+					-- rank above LSP and don't get duplicated by lua_ls.
+					lazydev = { module = "lazydev.integrations.blink", score_offset = 100 },
+				},
 			},
 
 			snippets = { preset = "luasnip" },
@@ -504,10 +509,25 @@ require("lazy").setup({
 
 			-- Add/delete/replace surroundings (brackets, quotes, etc.)
 			--
-			-- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
-			-- - sd'   - [S]urround [D]elete [']quotes
-			-- - sr)'  - [S]urround [R]eplace [)] [']
-			require("mini.surround").setup()
+			-- Mapped under a `gs` prefix (not the default `s`) so that `s` is free for
+			-- flash.nvim's jump motion. Examples:
+			-- - gsaiw) - [G]o [S]urround [A]dd [I]nner [W]ord [)]Paren
+			-- - gsd'   - [G]o [S]urround [D]elete [']quotes
+			-- - gsr)'  - [G]o [S]urround [R]eplace [)] [']
+			require("mini.surround").setup({
+				mappings = {
+					add = "gsa",
+					delete = "gsd",
+					find = "gsf",
+					find_left = "gsF",
+					highlight = "gsh",
+					replace = "gsr",
+					update_n_lines = "gsn",
+				},
+			})
+
+			-- Auto-pair brackets/quotes. Replaces the need for nvim-autopairs.
+			require("mini.pairs").setup()
 
 			-- Simple and easy statusline.
 			--  You could remove this setup call if you don't like it,
@@ -540,7 +560,7 @@ require("lazy").setup({
 	--
 	require("kickstart.plugins.debug"),
 	require("kickstart.plugins.indent_line"),
-	-- require 'kickstart.plugins.lint',
+	require("kickstart.plugins.lint"),
 	-- require 'kickstart.plugins.autopairs',
 	require("kickstart.plugins.neo-tree"),
 	require("kickstart.plugins.gitsigns"), -- adds gitsigns recommend keymaps
@@ -580,4 +600,4 @@ require("lazy").setup({
 require("custom")
 
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
+-- vim: ts=4 sts=4 sw=4 noet
