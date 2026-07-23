@@ -156,39 +156,24 @@ return {
 		-- (This previously `return`ed the dir old-lspconfig style, so
 		-- terraform-ls/tflint never attached at all on this config.)
 		local function terraform_root_dir(bufnr, on_dir)
-			local path = vim.api.nvim_buf_get_name(bufnr)
+			-- Anchor to the git repository root.
+			-- This forces all modules to share ONE workspace and ONE LSP process.
+			local root = vim.fs.root(bufnr, { ".git" })
 
+			if root then
+				return on_dir(root)
+			end
+
+			-- Fallback for files outside of a git repository
+			local path = vim.api.nvim_buf_get_name(bufnr)
 			if not path or path == "" then
 				path = vim.uv.cwd()
 			end
 
 			local stat = vim.uv.fs_stat(path)
-			local start = (stat and stat.type == "file") and vim.fs.dirname(path) or path
-			local dir = start
+			local dir = (stat and stat.type == "file") and vim.fs.dirname(path) or path
 
-			while dir do
-				-- Prefer the nearest Terraform/Terragrunt directory in monorepos.
-				if vim.fn.filereadable(dir .. "/terragrunt.hcl") == 1 then
-					return on_dir(dir)
-				end
-
-				local has_tf_file = #vim.fn.globpath(dir, "*.tf", false, true) > 0
-					or #vim.fn.globpath(dir, "*.tf.json", false, true) > 0
-					or #vim.fn.globpath(dir, "*.tfvars", false, true) > 0
-
-				if has_tf_file then
-					return on_dir(dir)
-				end
-
-				local parent = vim.fs.dirname(dir)
-				if parent == dir then
-					break
-				end
-
-				dir = parent
-			end
-
-			return on_dir(start)
+			return on_dir(dir)
 		end
 
 		local function terraform_on_attach(client, _)
