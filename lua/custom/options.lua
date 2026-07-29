@@ -18,3 +18,10 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 		vim.bo[args.buf].fixendofline = true
 	end,
 })
+
+vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+	pattern = { "*.tf", "*.tfvars" },
+	callback = function()
+		vim.bo.filetype = "terraform"
+	end,
+})
