@@ -217,6 +217,10 @@ return {
 
 			-- Terraform / Terragrunt
 			terraformls = {
+				-- CUSTOM: terraform-ls writes its job-scheduler trace to stderr by default, and
+				-- Neovim records every LSP stderr line into lsp.log at ERROR level, so the log
+				-- grew unbounded (2.4GB). -log-file diverts those logs away from stderr.
+				cmd = { "terraform-ls", "serve", "-log-file", "/dev/null" },
 				root_dir = terraform_root_dir,
 				on_attach = terraform_on_attach,
 				handlers = {
