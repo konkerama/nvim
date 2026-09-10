@@ -38,6 +38,11 @@ return {
 		vim.filetype.add({ pattern = { [".*%.hcl"] = "terragrunt" } })
 		vim.treesitter.language.register("hcl", "terragrunt")
 
+		-- CUSTOM: helm templates (ft comes from vim-helm) parse as gotmpl; the combined yaml
+		-- injection in after/queries/gotmpl/injections.scm colors the YAML body with the normal
+		-- yaml captures instead of vim-helm's legacy syntax palette.
+		vim.treesitter.language.register("gotmpl", "helm")
+
 		require("nvim-treesitter").setup({
 			install_dir = treesitter_parser_dir,
 		})
@@ -83,6 +88,19 @@ return {
 			reset_ts_highlight(vim.api.nvim_get_current_buf())
 		end, { desc = "Reset [T]reesitter [H]ighlight" })
 
+		-- CUSTOM: nvim-treesitter's yaml indent rewrites lines that are already correct --
+		-- standalone comments get pulled into the preceding block, and nested block sequences
+		-- (helm-unittest `asserts:`) get flattened. Only ask it for an indent while the line is
+		-- still empty (o/O/<CR>); once a line has text, keep the indent it has (-1), which also
+		-- makes `=` a no-op on yaml.
+		function _G.custom_yaml_indentexpr()
+			if vim.fn.getline(vim.v.lnum):match("^%s*$") then
+				return require("nvim-treesitter").indentexpr()
+			end
+
+			return -1
+		end
+
 		vim.api.nvim_create_autocmd("FileType", {
 			callback = function(args)
 				local buf, filetype = args.buf, args.match
@@ -105,7 +123,11 @@ return {
 				-- vim.wo.foldmethod = 'expr'
 
 				-- enables treesitter based indentation
-				vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+				if filetype == "yaml" or filetype:match("^yaml%.") then
+					vim.bo.indentexpr = "v:lua.custom_yaml_indentexpr()"
+				else
+					vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+				end
 			end,
 		})
 

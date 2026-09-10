@@ -141,7 +141,7 @@ return {
 		-- Enable the following language servers
 		--  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
 		--  See `:help lsp-config` for information about keys and how to configure
-		-- CUSTOM: All servers below (gopls, terraformls, tflint, yamlls) are additions on top of the
+		-- CUSTOM: All servers below (gopls, terraformls, tflint, yamlls, helm_ls) are additions on top of the
 		-- kickstart base (stylua, lua_ls). The terraform/yaml helpers below are also custom.
 		-- CUSTOM: terraform/tflint warning filters (suppress noisy diagnostics)
 		local terraform_warning_filters = {
@@ -249,6 +249,15 @@ return {
 							["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
 							["https://json.schemastore.org/github-action.json"] = "/action.{yml,yaml}",
 						},
+					},
+				},
+			},
+
+			-- Helm (ft=helm comes from vim-helm; helm-ls embeds yamlls for values/Chart)
+			helm_ls = {
+				settings = {
+					["helm-ls"] = {
+						yamlls = { enabled = true },
 					},
 				},
 			},

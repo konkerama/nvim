@@ -8,7 +8,8 @@ return {
 	event = { "BufReadPre", "BufNewFile" },
 	opts = {
 		format_on_save = function(bufnr)
-			local disable_filetypes = { c = true, cpp = true }
+			-- CUSTOM: helm templates are Go templates; lsp_format fallback would let a formatter rewrite them.
+			local disable_filetypes = { c = true, cpp = true, helm = true }
 			if disable_filetypes[vim.bo[bufnr].filetype] then
 				return nil
 			else
