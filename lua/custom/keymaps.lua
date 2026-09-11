@@ -358,6 +358,7 @@ vim.opt.foldenable = true
 
 -- vim.keymap.set("n", "<leader>gb", ":Git switch ", { desc = "Git switch [B]ranch" })
 vim.keymap.set("n", "<leader>gb", "<cmd>GBrowse<CR>", { desc = "[G]it [B]rowse" })
+vim.keymap.set("n", "<leader>gL", "<cmd>.GBrowse<CR>", { desc = "[G]it browse [L]ine" })
 vim.keymap.set("n", "<leader>gB", open_github_commit_for_current_line, { desc = "[G]it browse causing commit" })
 vim.keymap.set("v", "<leader>gb", ":'<,'>GBrowse<CR>", { desc = "[G]it [B]rowse selection" })
 
