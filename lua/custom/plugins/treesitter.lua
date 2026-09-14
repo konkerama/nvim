@@ -64,6 +64,7 @@ return {
 			"luadoc",
 			"markdown",
 			"markdown_inline",
+			"mermaid",
 			"query",
 			"terraform",
 			"vim",
